@@ -21,7 +21,6 @@ class DropDown(Component):
 
         self.section_width = self.rect.width
         self.section_height = self.rect.height // len(values)
-        print(self.section_height)
 
         self.font = pygame.font.Font(None, self.section_height >> 1)
         self.text_color = text_color

@@ -1,0 +1,1 @@
+black main.py core\ planner\ render\

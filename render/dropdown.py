@@ -6,13 +6,13 @@ from render.base import Component
 
 class DropDown(Component):
     def __init__(
-            self,
-            surface: pygame.Surface,
-            translation: tuple[int, int],
-            values: list[str],
-            text_color: colors.Color = colors.BLACK,
-            background_color: colors.Color = colors.WHITE,
-            main_color: colors.Color = colors.CYAN,
+        self,
+        surface: pygame.Surface,
+        translation: tuple[int, int],
+        values: list[str],
+        text_color: colors.Color = colors.BLACK,
+        background_color: colors.Color = colors.WHITE,
+        main_color: colors.Color = colors.CYAN,
     ):
         super().__init__(surface, translation)
         self.values = values

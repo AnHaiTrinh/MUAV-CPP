@@ -27,19 +27,16 @@ class Component(ABC):
     def render(self):
         pass
 
-    def update(self, event: pygame.event.Event):
-        if self.is_disabled or not self.is_clicked(event):
-            return
-        self.handleMouseClick(pygame.mouse.get_pos())
-
     @abstractmethod
-    def handleMouseClick(self, absolute_mouse_pos: tuple[int, int]):
+    def update(self, event: pygame.event.Event):
         pass
 
     def is_clicked(self, event: pygame.event.Event) -> bool:
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            return self.collide(pygame.mouse.get_pos())
-        return False
+        return (
+            event.type == pygame.MOUSEBUTTONDOWN
+            and event.button == 1
+            and self.collide(event.pos)
+        )
 
     def collide(self, point: tuple[int, int]) -> bool:
         return self.rect.collidepoint(point)
@@ -71,9 +68,10 @@ class BorderedComponent(Component):
             self.component.surface, (self.border_width, self.border_width)
         )
 
-    def handleMouseClick(self, absolute_mouse_pos: tuple[int, int]):
-        if self.component.collide(absolute_mouse_pos):
-            self.component.handleMouseClick(absolute_mouse_pos)
+    def update(self, event: pygame.event.Event):
+        if self.is_disabled:
+            return
+        self.component.update(event)
 
 
 class ComposableComponent(Component):
@@ -100,8 +98,8 @@ class ComposableComponent(Component):
                 (component.rect.x - self.rect.x, component.rect.y - self.rect.y),
             )
 
-    def handleMouseClick(self, absolute_mouse_pos: tuple[int, int]):
+    def update(self, event: pygame.event.Event):
+        if self.is_disabled:
+            return
         for component in self.components.values():
-            if component.collide(absolute_mouse_pos):
-                component.handleMouseClick(absolute_mouse_pos)
-                break
+            component.update(event)

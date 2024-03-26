@@ -26,9 +26,12 @@ class Button(Component):
         self.text_color = text_color
         self.font = pygame.font.Font(None, self.rect.height >> 1)
 
-    @abstractmethod
+    def update(self, event: pygame.event.Event):
+        if (not self.is_disabled) and self.is_clicked(event):
+            self.handleMouseClick(event.pos)
+
     def handleMouseClick(self, absolute_mouse_pos: tuple[int, int]):
-        pass
+        print(f"{self.text} button clicked")
 
     def render(self):
         pygame.draw.rect(
@@ -133,12 +136,13 @@ class ButtonTray(ComposableComponent):
             ),
         )
 
-    def handleMouseClick(self, absolute_mouse_pos: tuple[int, int]):
-        for name, component in self.components.items():
-            if component.collide(absolute_mouse_pos):
-                component.handleMouseClick(absolute_mouse_pos)
-                self.state.state = StateEnum[name.upper()]
-                break
+    def update(self, event: pygame.event.Event):
+        if (not self.is_disabled) and self.is_clicked(event):
+            for name, component in self.components.items():
+                if component.collide(event.pos):
+                    component.update(event)
+                    self.state.state = StateEnum[name.upper()]
+                    break
 
 
 class LoadButton(Button):
@@ -193,3 +197,40 @@ class SaveButton(Button):
 
         save_map_to_file(self.map_component.get_map(), filename)
         print(f"Map saved to {filename}")
+
+
+class AnnotatedComponent(ComposableComponent):
+    def __init__(
+        self,
+        component: Component,
+        annotation: str,
+        annotation_height: int = 30,
+        annotation_color: colors.Color = colors.BLACK,
+        annotation_background_color: colors.Color = colors.WHITE,
+    ):
+        new_translation = (component.rect.x, component.rect.y - annotation_height)
+        new_surface = pygame.Surface(
+            (
+                component.rect.width,
+                component.rect.height + annotation_height,
+            )
+        )
+        super().__init__(new_surface, new_translation)
+
+        annotation_surface = pygame.Surface((self.rect.width, annotation_height))
+        annotation_translation = (self.rect.x, self.rect.y)
+        annotation_button = Button(
+            annotation_surface,
+            annotation_translation,
+            annotation,
+            annotation_background_color,
+            annotation_color,
+        )
+
+        self.add_component("annotation", annotation_button)
+        self.add_component("component", component)
+
+    def update(self, event: pygame.event.Event):
+        if self.is_disabled:
+            return
+        self.components["component"].update(event)

@@ -3,9 +3,10 @@ import pygame
 from core.environment import Map
 from render.base import BorderedComponent, ComposableComponent, State, StateEnum
 from render import colors
-from render.buttons import ButtonTray, LoadButton, SaveButton
+from render.buttons import ButtonTray, LoadButton, SaveButton, AnnotatedComponent
 from render.dropdown import DropDown
 from render.map_component import MapComponent
+from render.slider import Slider
 
 
 class Renderer(ComposableComponent):
@@ -52,7 +53,16 @@ class Renderer(ComposableComponent):
         )
         self.add_component("dropdown", self.dropdown)
 
-        self.not_disabled = ["state"]
+        self.new_uav_slider = Slider(
+            pygame.Surface((200, 20)),
+            (30, 150),
+        )
+        self.add_component(
+            "new_uav_prob",
+            AnnotatedComponent(self.new_uav_slider, "New UAV Probability"),
+        )
+
+        self.not_disabled = ["state", "new_uav_prob"]
 
         self.done = False
 
@@ -61,8 +71,7 @@ class Renderer(ComposableComponent):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.done = True
-                for component in self.components.values():
-                    component.update(event)
+                self.update(event)
 
             if self.state.state == StateEnum.RESET:
                 self.map_component.set_map(Map.create_empty_map(512, 512))
@@ -86,5 +95,6 @@ class Renderer(ComposableComponent):
                     component.is_disabled = False
 
             self.render()
+            print(self.new_uav_slider.get_value())
             pygame.display.flip()
         pygame.quit()

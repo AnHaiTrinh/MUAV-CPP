@@ -38,17 +38,18 @@ class MapComponent(Component):
                     ),
                 )
 
-    def handleMouseClick(self, absolute_mouse_pos: tuple[int, int]):
-        absolute_mouse_pos_x, absolute_mouse_pos_y = absolute_mouse_pos
-        mouse_pos_x = absolute_mouse_pos_x - self.rect.x
-        mouse_pos_y = absolute_mouse_pos_y - self.rect.y
-        cell_x = mouse_pos_x // self.cell_width
-        cell_y = mouse_pos_y // self.cell_height
-        cell_type = self._map.get_cell(cell_y, cell_x).cell_type
-        if cell_type == CellType.FREE:
-            self._map.set_cell(cell_y, cell_x, CellType.OCCUPIED)
-        elif cell_type == CellType.OCCUPIED:
-            self._map.set_cell(cell_y, cell_x, CellType.FREE)
+    def update(self, event: pygame.event.Event):
+        if (not self.is_disabled) and self.is_clicked(event):
+            absolute_mouse_pos_x, absolute_mouse_pos_y = event.pos
+            mouse_pos_x = absolute_mouse_pos_x - self.rect.x
+            mouse_pos_y = absolute_mouse_pos_y - self.rect.y
+            cell_x = mouse_pos_x // self.cell_width
+            cell_y = mouse_pos_y // self.cell_height
+            cell_type = self._map.get_cell(cell_y, cell_x).cell_type
+            if cell_type == CellType.FREE:
+                self._map.set_cell(cell_y, cell_x, CellType.OCCUPIED)
+            elif cell_type == CellType.OCCUPIED:
+                self._map.set_cell(cell_y, cell_x, CellType.FREE)
 
     def set_map(self, _map: Map) -> None:
         self._map = resize_map(

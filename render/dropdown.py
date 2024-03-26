@@ -15,7 +15,8 @@ class DropDown(Component):
         main_color: colors.Color = colors.CYAN,
     ):
         super().__init__(surface, translation)
-        self.values = values
+        self.values = tuple(values)
+        self.values_index_map = {value: idx for idx, value in enumerate(values)}
         self.selected = 0
         self.is_expanded = False
 
@@ -41,15 +42,18 @@ class DropDown(Component):
                     self.draw_section(idx, value, self.background_color)
                     idx += 1
 
-    def handleMouseClick(self, absolute_mouse_pos: tuple[int, int]):
-        _, absolute_mouse_pos_y = absolute_mouse_pos
-        mouse_pos_y = absolute_mouse_pos_y - self.rect.y
-        section_index = mouse_pos_y // self.section_height
-        if section_index == 0:
-            self.is_expanded = not self.is_expanded
-        else:
-            self.selected = section_index
-            self.is_expanded = False
+    def update(self, event: pygame.event.Event):
+        if (not self.is_disabled) and self.is_clicked(event):
+            _, absolute_mouse_pos_y = event.pos
+            mouse_pos_y = absolute_mouse_pos_y - self.rect.y
+            section_index = mouse_pos_y // self.section_height
+            if section_index == 0:
+                self.is_expanded = not self.is_expanded
+            else:
+                if self.selected >= section_index:
+                    section_index -= 1
+                self.selected = section_index
+                self.is_expanded = False
 
     def draw_section(self, section_index: int, text: str, color: colors.Color):
         width_offset = 0

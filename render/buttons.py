@@ -1,13 +1,10 @@
 from collections.abc import Callable
-from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 import pygame
 
-from core.utils import load_map_from_file, save_map_to_file
 from render.base import Component, ComposableComponent, BorderedComponent, StateEnum
 from render import colors
 from render.base import State
-from render.map_component import MapComponent
 
 
 class Button(Component):

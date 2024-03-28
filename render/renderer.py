@@ -1,4 +1,3 @@
-from collections.abc import Callable
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 import pygame

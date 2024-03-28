@@ -1,9 +1,13 @@
+from collections.abc import Callable
+from tkinter.filedialog import askopenfilename, asksaveasfilename
+
 import pygame
 
 from core.environment import Map
-from render.base import BorderedComponent, ComposableComponent, State, StateEnum
+from core.utils import load_map_from_file, save_map_to_file
+from render.base import BorderedComponent, ComposableComponent, StateEnum
 from render import colors
-from render.buttons import ButtonTray, LoadButton, SaveButton, AnnotatedComponent
+from render.buttons import ButtonTray, AnnotatedComponent, Button
 from render.dropdown import DropDown
 from render.map_component import MapComponent
 from render.slider import Slider
@@ -31,19 +35,15 @@ class Renderer(ComposableComponent):
             BorderedComponent(self.map_component),
         )
 
-        self.state = State()
-        self.add_component(
-            "state", ButtonTray(pygame.Surface((200, 50)), self.state, (20, 20))
-        )
+        self.state_button_tray = ButtonTray(pygame.Surface((200, 50)), (20, 20))
+        self.add_component("state", self.state_button_tray)
 
-        self.load_button = LoadButton(
-            pygame.Surface((60, 50)), (300, 20), self.map_component
-        )
+        self.load_button = Button(pygame.Surface((60, 50)), (300, 20), "Load")
+        self.load_button.add_click_handler(self.load_handler)
         self.add_component("load", BorderedComponent(self.load_button, 5))
 
-        self.save_button = SaveButton(
-            pygame.Surface((60, 50)), (400, 20), self.map_component
-        )
+        self.save_button = Button(pygame.Surface((60, 50)), (400, 20), "Save")
+        self.save_button.add_click_handler(self.save_handler)
         self.add_component("save", BorderedComponent(self.save_button, 5))
 
         self.dropdown = DropDown(
@@ -82,11 +82,11 @@ class Renderer(ComposableComponent):
                     self.done = True
                 self.update(event)
 
-            if self.state.state == StateEnum.RESET:
+            if self.state_button_tray.get_state() == StateEnum.RESET:
                 self.map_component.set_map(Map.create_empty_map(512, 512))
-                self.state.state = StateEnum.EDIT
+                self.state_button_tray.set_state(StateEnum.EDIT)
 
-            state = self.state.state
+            state = self.state_button_tray.get_state()
 
             if state != StateEnum.EDIT:
                 for name, component in self.components.items():
@@ -94,9 +94,8 @@ class Renderer(ComposableComponent):
                         component.is_disabled = True
 
                 if state == StateEnum.RUN:
-                    print("running")
+                    pass
                 elif state == StateEnum.PAUSE:
-                    print("pausing")
                     continue
 
             else:
@@ -106,3 +105,33 @@ class Renderer(ComposableComponent):
             self.render()
             pygame.display.flip()
         pygame.quit()
+
+    def load_handler(self, _: tuple[int, int]):
+        filename = askopenfilename(
+            initialdir=".",
+            title="Open File",
+            filetypes=[
+                ("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.tiff *.ico"),
+                ("Text files", "*.txt"),
+            ],
+        )
+        if not filename:
+            return
+
+        new_map = load_map_from_file(filename)
+        self.map_component.set_map(new_map)
+
+    def save_handler(self, _: tuple[int, int]):
+        filename = asksaveasfilename(
+            initialdir=".",
+            title="Save File",
+            filetypes=[
+                ("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.tiff *.ico"),
+                ("Text files", "*.txt"),
+            ],
+        )
+        if not filename:
+            return
+
+        save_map_to_file(self.map_component.get_map(), filename)
+        print(f"Map saved to {filename}")

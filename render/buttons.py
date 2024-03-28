@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from collections.abc import Callable
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 import pygame
@@ -26,13 +26,15 @@ class Button(Component):
         self.background_color = background_color
         self.text_color = text_color
         self.font = pygame.font.Font(None, int(self.rect.height * font_ratio))
+        self.handlers: list[Callable[tuple[int, int], None]] = []
 
     def update(self, event: pygame.event.Event):
         if (not self.is_disabled) and self.is_clicked(event):
-            self.handleMouseClick(event.pos)
+            for handler in self.handlers:
+                handler(event.pos)
 
-    def handleMouseClick(self, absolute_mouse_pos: tuple[int, int]):
-        print(f"{self.text} button clicked")
+    def add_click_handler(self, handler: Callable[[tuple[int, int]], None]):
+        self.handlers.append(handler)
 
     def render(self):
         pygame.draw.rect(
@@ -45,42 +47,18 @@ class Button(Component):
         self.surface.blit(text, text_rect)
 
 
-class RunButton(Button):
-    def __init__(self, surface: pygame.Surface, translation: tuple[int, int]):
-        super().__init__(surface, translation, "Run")
-
-    def handleMouseClick(self, absolute_mouse_pos: tuple[int, int]):
-        print("Run button clicked")
-
-
-class PauseButton(Button):
-    def __init__(self, surface: pygame.Surface, translation: tuple[int, int]):
-        super().__init__(surface, translation, "Pause")
-
-    def handleMouseClick(self, absolute_mouse_pos: tuple[int, int]):
-        print("Pause button clicked")
-
-
-class ResetButton(Button):
-    def __init__(self, surface: pygame.Surface, translation: tuple[int, int]):
-        super().__init__(surface, translation, "Reset")
-
-    def handleMouseClick(self, absolute_mouse_pos: tuple[int, int]):
-        print("Reset button clicked")
-
-
 class ButtonTray(ComposableComponent):
     def __init__(
         self,
         surface: pygame.Surface,
-        state: State,
         translation: tuple[int, int],
         background_color: colors.Color = colors.WHITE,
     ):
         super().__init__(surface, translation, background_color)
-        self.state = state
+        self.state = State()
 
-        num_buttons = 3
+        button_labels = ["Run", "Pause", "Reset"]
+        num_buttons = len(button_labels)
         button_vertical_pad = self.rect.height // 10
         button_horizontal_pad = self.rect.width // 10
         button_pad_width_to_button_width = 0.5
@@ -89,115 +67,41 @@ class ButtonTray(ComposableComponent):
         ) // int(num_buttons + button_pad_width_to_button_width * (num_buttons - 1))
         button_height = self.rect.height - 2 * button_vertical_pad
         button_border = 3
-        self.add_component(
-            "run",
-            BorderedComponent(
-                RunButton(
-                    pygame.Surface((button_width, button_height)),
-                    (
-                        self.rect.x + button_horizontal_pad,
-                        self.rect.y + button_vertical_pad,
+
+        for i, label in enumerate(button_labels):
+            button = Button(
+                pygame.Surface((button_width, button_height)),
+                (
+                    self.rect.x
+                    + int(
+                        button_horizontal_pad
+                        + i * (1 + button_pad_width_to_button_width) * button_width
                     ),
+                    self.rect.y + button_vertical_pad,
                 ),
-                button_border,
-            ),
-        )
-        self.add_component(
-            "pause",
-            BorderedComponent(
-                PauseButton(
-                    pygame.Surface((button_width, button_height)),
-                    (
-                        self.rect.x
-                        + int(
-                            button_horizontal_pad
-                            + button_width * (1 + button_pad_width_to_button_width)
-                        ),
-                        self.rect.y + button_vertical_pad,
-                    ),
-                ),
-                button_border,
-            ),
-        )
-        self.add_component(
-            "reset",
-            BorderedComponent(
-                ResetButton(
-                    pygame.Surface((button_width, button_height)),
-                    (
-                        self.rect.x
-                        + int(
-                            button_horizontal_pad
-                            + 2 * button_width * (1 + button_pad_width_to_button_width)
-                        ),
-                        self.rect.y + button_vertical_pad,
-                    ),
-                ),
-                button_border,
-            ),
-        )
+                label,
+            )
+            button.add_click_handler(self.handle_button_click(label))
 
-    def update(self, event: pygame.event.Event):
-        if (not self.is_disabled) and self.is_clicked(event):
-            for name, component in self.components.items():
-                if component.collide(event.pos):
-                    component.update(event)
-                    self.state.state = StateEnum[name.upper()]
-                    break
+            self.add_component(
+                label.lower(),
+                BorderedComponent(button, button_border),
+            )
 
+    def get_state(self):
+        return self.state.state
 
-class LoadButton(Button):
-    def __init__(
-        self,
-        surface: pygame.Surface,
-        translation: tuple[int, int],
-        map_component: MapComponent,
-    ):
-        super().__init__(surface, translation, "Load")
-        self.map_component = map_component
+    def set_state(self, state: StateEnum):
+        self.state.state = state
 
-    def handleMouseClick(self, absolute_mouse_pos: tuple[int, int]):
-        # open file chooser
-        filename = askopenfilename(
-            initialdir=".",
-            title="Open File",
-            filetypes=[
-                ("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.tiff *.ico"),
-                ("Text files", "*.txt"),
-            ],
-        )
-        if not filename:
-            return
+    def handle_button_click(
+        self, button_name: str
+    ) -> Callable[[tuple[int, int]], None]:
+        def handler(_):
+            self.set_state(StateEnum[button_name.upper()])
+            print(f"{button_name} button clicked")
 
-        new_map = load_map_from_file(filename)
-        self.map_component.set_map(new_map)
-
-
-class SaveButton(Button):
-    def __init__(
-        self,
-        surface: pygame.Surface,
-        translation: tuple[int, int],
-        map_component: MapComponent,
-    ):
-        super().__init__(surface, translation, "Save")
-        self.map_component = map_component
-
-    def handleMouseClick(self, absolute_mouse_pos: tuple[int, int]):
-        # open file chooser
-        filename = asksaveasfilename(
-            initialdir=".",
-            title="Save File",
-            filetypes=[
-                ("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.tiff *.ico"),
-                ("Text files", "*.txt"),
-            ],
-        )
-        if not filename:
-            return
-
-        save_map_to_file(self.map_component.get_map(), filename)
-        print(f"Map saved to {filename}")
+        return handler
 
 
 class AnnotatedComponent(ComposableComponent):

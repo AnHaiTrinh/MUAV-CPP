@@ -14,67 +14,88 @@ class Slider(Component):
         background_color: colors.Color = colors.WHITE,
         line_color: colors.Color = colors.BLACK,
         slider_color: colors.Color = colors.RED,
+        ticker_color: colors.Color = colors.BLACK,
     ):
         super().__init__(surface, translation)
         self.min_value = min_value
         self.max_value = max_value
 
-        self.slider_radius = self.rect.height >> 1
+        self.height_offset = 2 * self.rect.height // 3
+        self.slider_radius = self.rect.height // 6
         self.line_length = self.rect.width - 2 * self.slider_radius
         self.line_begin = self.slider_radius
         self.line_end = self.rect.width - self.slider_radius
         self.slider_pos = self.line_begin
+
         self.dragging = False
 
         self.background_color = background_color
         self.slider_color = slider_color
         self.line_color = line_color
+        self.ticker_color = ticker_color
 
     def render(self):
         self.surface.fill(self.background_color)
         pygame.draw.line(
             self.surface,
             self.line_color,
-            (self.line_begin, self.rect.height >> 1),
-            (self.line_end, self.rect.height >> 1),
+            (self.line_begin, self.height_offset),
+            (self.line_end, self.height_offset),
             5,
         )
         pygame.draw.circle(
             self.surface,
             self.slider_color,
-            (self.slider_pos, self.rect.height >> 1),
+            (self.slider_pos, self.height_offset),
             self.slider_radius,
         )
+        if self.is_slider_hovered():
+            ticker_height = 2 * self.height_offset - self.rect.height
+            font = pygame.font.Font(None, ticker_height)
+            ticker = font.render(f"{self.get_value():.2f}", True, colors.BLACK)
+            ticker_rect = ticker.get_rect(
+                center=(
+                    min(
+                        max(self.slider_pos, ticker.get_width() // 2),
+                        self.rect.width - ticker.get_width() // 2,
+                    ),
+                    ticker_height // 2,
+                )
+            )
+            self.surface.blit(ticker, ticker_rect)
 
     def update(self, event: pygame.event.Event):
         if self.is_disabled:
             return
 
         if event.type == pygame.MOUSEBUTTONDOWN:
-            self.handleMouseClick(event.pos)
+            self.handleMouseClick()
         elif event.type == pygame.MOUSEBUTTONUP:
             self.handleMouseUp()
         elif event.type == pygame.MOUSEMOTION:
-            self.handleMouseMotion(event.pos)
+            self.handleMouseMotion()
 
-    def handleMouseClick(self, absolute_mouse_pos: tuple[int, int]):
-        mouse_x, mouse_y = absolute_mouse_pos
-        dist = (mouse_x - (self.slider_pos + self.rect.x + self.slider_radius)) ** 2 + (
-            mouse_y - (self.rect.y + self.slider_radius)
-        ) ** 2
-        if dist <= self.slider_radius**2:
+    def handleMouseClick(self):
+        if self.is_slider_hovered():
             self.dragging = True
 
     def handleMouseUp(self):
         self.dragging = False
 
-    def handleMouseMotion(self, absolute_mouse_pos: tuple[int, int]):
+    def handleMouseMotion(self):
         if self.dragging:
-            mouse_x, _ = absolute_mouse_pos
+            mouse_x, _ = pygame.mouse.get_pos()
             mouse_x -= self.rect.x
             self.slider_pos = min(max(mouse_x, self.line_begin), self.line_end)
 
-    def get_value(self):
+    def get_value(self) -> float:
         return self.min_value + (
             self.slider_pos - self.slider_radius
         ) / self.line_length * (self.max_value - self.min_value)
+
+    def is_slider_hovered(self) -> bool:
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        dist = (mouse_x - (self.slider_pos + self.rect.x)) ** 2 + (
+            mouse_y - (self.rect.y + self.height_offset)
+        ) ** 2
+        return dist <= self.slider_radius**2

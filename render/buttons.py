@@ -18,13 +18,14 @@ class Button(Component):
         text: str,
         background_color: colors.Color = colors.WHITE,
         text_color: colors.Color = colors.BLACK,
+        font_ratio: float = 0.5,
     ):
         super().__init__(surface, translation)
 
         self.text = text
         self.background_color = background_color
         self.text_color = text_color
-        self.font = pygame.font.Font(None, self.rect.height >> 1)
+        self.font = pygame.font.Font(None, int(self.rect.height * font_ratio))
 
     def update(self, event: pygame.event.Event):
         if (not self.is_disabled) and self.is_clicked(event):
@@ -204,7 +205,7 @@ class AnnotatedComponent(ComposableComponent):
         self,
         component: Component,
         annotation: str,
-        annotation_height: int = 30,
+        annotation_height: int = 25,
         annotation_color: colors.Color = colors.BLACK,
         annotation_background_color: colors.Color = colors.WHITE,
     ):
@@ -220,11 +221,12 @@ class AnnotatedComponent(ComposableComponent):
         annotation_surface = pygame.Surface((self.rect.width, annotation_height))
         annotation_translation = (self.rect.x, self.rect.y)
         annotation_button = Button(
-            annotation_surface,
-            annotation_translation,
-            annotation,
-            annotation_background_color,
-            annotation_color,
+            surface=annotation_surface,
+            translation=annotation_translation,
+            text=annotation,
+            background_color=annotation_background_color,
+            text_color=annotation_color,
+            font_ratio=1.0,
         )
 
         self.add_component("annotation", annotation_button)

@@ -33,28 +33,28 @@ class Renderer(ComposableComponent):
 
         self.state = State()
         self.add_component(
-            "state", ButtonTray(pygame.Surface((200, 50)), self.state, (30, 50))
+            "state", ButtonTray(pygame.Surface((200, 50)), self.state, (20, 20))
         )
 
         self.load_button = LoadButton(
-            pygame.Surface((100, 50)), (600, 50), self.map_component
+            pygame.Surface((60, 50)), (300, 20), self.map_component
         )
-        self.add_component("load", BorderedComponent(self.load_button))
+        self.add_component("load", BorderedComponent(self.load_button, 5))
 
         self.save_button = SaveButton(
-            pygame.Surface((100, 50)), (600, 150), self.map_component
+            pygame.Surface((60, 50)), (400, 20), self.map_component
         )
-        self.add_component("save", BorderedComponent(self.save_button))
+        self.add_component("save", BorderedComponent(self.save_button, 5))
 
         self.dropdown = DropDown(
             pygame.Surface((150, 210)),
-            (350, 20),
+            (600, 20),
             ["Algo1", "Algo2", "Algo3", "Algo4"],
         )
         self.add_component("dropdown", self.dropdown)
 
         self.new_uav_slider = Slider(
-            pygame.Surface((200, 20)),
+            pygame.Surface((200, 42)),
             (30, 150),
         )
         self.add_component(
@@ -62,7 +62,16 @@ class Renderer(ComposableComponent):
             AnnotatedComponent(self.new_uav_slider, "New UAV Probability"),
         )
 
-        self.not_disabled = ["state", "new_uav_prob"]
+        self.remove_uav_slider = Slider(
+            pygame.Surface((200, 42)),
+            (330, 150),
+        )
+        self.add_component(
+            "remove_uav_prob",
+            AnnotatedComponent(self.remove_uav_slider, "Remove UAV Probability"),
+        )
+
+        self.not_disabled = ["state", "new_uav_prob", "remove_uav_prob"]
 
         self.done = False
 
@@ -95,6 +104,5 @@ class Renderer(ComposableComponent):
                     component.is_disabled = False
 
             self.render()
-            print(self.new_uav_slider.get_value())
             pygame.display.flip()
         pygame.quit()

@@ -38,11 +38,11 @@ class Renderer(ComposableComponent):
         self.add_component("state", self.state_button_tray)
 
         self.load_button = Button(pygame.Surface((60, 50)), (300, 20), "Load")
-        self.load_button.add_click_handler(self.load_handler)
+        self.load_button.add_click_handler(self._load_handler)
         self.add_component("load", BorderedComponent(self.load_button, 5))
 
         self.save_button = Button(pygame.Surface((60, 50)), (400, 20), "Save")
-        self.save_button.add_click_handler(self.save_handler)
+        self.save_button.add_click_handler(self._save_handler)
         self.add_component("save", BorderedComponent(self.save_button, 5))
 
         self.dropdown = DropDown(
@@ -74,7 +74,7 @@ class Renderer(ComposableComponent):
 
         self.done = False
 
-    def run(self):
+    def run(self) -> None:
         while not self.done:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -105,7 +105,7 @@ class Renderer(ComposableComponent):
             pygame.display.flip()
         pygame.quit()
 
-    def load_handler(self, _: tuple[int, int]):
+    def _load_handler(self, _: pygame.event.Event) -> None:
         filename = askopenfilename(
             initialdir=".",
             title="Open File",
@@ -120,7 +120,7 @@ class Renderer(ComposableComponent):
         new_map = load_map_from_file(filename)
         self.map_component.set_map(new_map)
 
-    def save_handler(self, _: tuple[int, int]):
+    def _save_handler(self, _: pygame.event.Event) -> None:
         filename = asksaveasfilename(
             initialdir=".",
             title="Save File",

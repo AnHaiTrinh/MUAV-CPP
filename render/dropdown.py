@@ -28,22 +28,24 @@ class DropDown(Component):
         self.background_color = background_color
         self.main_color = main_color
 
-    def render(self):
+        self.add_event_handler(self.click_handler)
+
+    def render(self) -> None:
         pygame.draw.rect(
             self.surface,
             self.background_color,
             (0, 0, self.rect.width, self.rect.height),
         )
-        self.draw_section(0, self.values[self.selected], self.main_color)
+        self._draw_section(0, self.values[self.selected], self.main_color)
         idx = 1
         if self.is_expanded:
             for value in self.values:
                 if value != self.values[self.selected]:
-                    self.draw_section(idx, value, self.background_color)
+                    self._draw_section(idx, value, self.background_color)
                     idx += 1
 
-    def update(self, event: pygame.event.Event):
-        if (not self.is_disabled) and self.is_clicked(event):
+    def click_handler(self, event: pygame.event.Event) -> None:
+        if self.is_clicked(event):
             _, absolute_mouse_pos_y = event.pos
             mouse_pos_y = absolute_mouse_pos_y - self.rect.y
             section_index = mouse_pos_y // self.section_height
@@ -55,7 +57,7 @@ class DropDown(Component):
                 self.selected = section_index
                 self.is_expanded = False
 
-    def draw_section(self, section_index: int, text: str, color: colors.Color):
+    def _draw_section(self, section_index: int, text: str, color: colors.Color) -> None:
         width_offset = 0
         height_offset = section_index * self.section_height
         rect = pygame.draw.rect(
@@ -63,6 +65,6 @@ class DropDown(Component):
             color,
             (width_offset, height_offset, self.section_width, self.section_height),
         )
-        text = self.font.render(text, True, self.text_color)
-        text_rect = text.get_rect(center=rect.center)
-        self.surface.blit(text, text_rect)
+        text_surface = self.font.render(text, True, self.text_color)
+        text_rect = text_surface.get_rect(center=rect.center)
+        self.surface.blit(text_surface, text_rect)

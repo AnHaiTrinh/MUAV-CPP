@@ -34,7 +34,11 @@ class Slider(Component):
         self.line_color = line_color
         self.ticker_color = ticker_color
 
-    def render(self):
+        self.add_event_handler(self.handle_mouse_click)
+        self.add_event_handler(self.handle_mouse_up)
+        self.add_event_handler(self.handle_mouse_motion)
+
+    def render(self) -> None:
         self.surface.fill(self.background_color)
         pygame.draw.line(
             self.surface,
@@ -64,26 +68,16 @@ class Slider(Component):
             )
             self.surface.blit(ticker, ticker_rect)
 
-    def update(self, event: pygame.event.Event):
-        if self.is_disabled:
-            return
-
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            self.handleMouseClick()
-        elif event.type == pygame.MOUSEBUTTONUP:
-            self.handleMouseUp()
-        elif event.type == pygame.MOUSEMOTION:
-            self.handleMouseMotion()
-
-    def handleMouseClick(self):
-        if self.is_slider_hovered():
+    def handle_mouse_click(self, event: pygame.event.Event) -> None:
+        if self.is_clicked(event) and self.is_slider_hovered():
             self.dragging = True
 
-    def handleMouseUp(self):
-        self.dragging = False
+    def handle_mouse_up(self, event: pygame.event.Event) -> None:
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.dragging = False
 
-    def handleMouseMotion(self):
-        if self.dragging:
+    def handle_mouse_motion(self, event: pygame.event.Event) -> None:
+        if event.type == pygame.MOUSEMOTION and self.dragging:
             mouse_x, _ = pygame.mouse.get_pos()
             mouse_x -= self.rect.x
             self.slider_pos = min(max(mouse_x, self.line_begin), self.line_end)

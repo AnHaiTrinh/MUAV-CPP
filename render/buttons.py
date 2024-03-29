@@ -16,6 +16,7 @@ class Button(Component):
         background_color: colors.Color = colors.WHITE,
         text_color: colors.Color = colors.BLACK,
         font_ratio: float = 0.5,
+        align: str = "center",
     ):
         super().__init__(surface, translation)
 
@@ -23,25 +24,32 @@ class Button(Component):
         self.background_color = background_color
         self.text_color = text_color
         self.font = pygame.font.Font(None, int(self.rect.height * font_ratio))
-        self.handlers: list[Callable[tuple[int, int], None]] = []
+        self.align = align
 
-    def update(self, event: pygame.event.Event):
-        if (not self.is_disabled) and self.is_clicked(event):
-            for handler in self.handlers:
-                handler(event.pos)
-
-    def add_click_handler(self, handler: Callable[[tuple[int, int]], None]):
-        self.handlers.append(handler)
-
-    def render(self):
+    def render(self) -> None:
         pygame.draw.rect(
             self.surface,
             self.background_color,
             (0, 0, self.rect.width, self.rect.height),
         )
         text = self.font.render(self.text, True, self.text_color)
-        text_rect = text.get_rect(center=(self.rect.width // 2, self.rect.height // 2))
-        self.surface.blit(text, text_rect)
+        self.surface.blit(text, self.get_text_rect(text))
+
+    def add_click_handler(self, handler: Callable[[pygame.event.Event], None]) -> None:
+        def click_handler(e: pygame.event.Event):
+            if self.is_clicked(e):
+                handler(e)
+
+        self.add_event_handler(click_handler)
+
+    def get_text_rect(self, text_surface: pygame.Surface) -> pygame.Rect:
+        if self.align == "center":
+            return text_surface.get_rect(
+                center=(self.rect.width // 2, self.rect.height // 2)
+            )
+        elif self.align == "left":
+            return text_surface.get_rect(left=0, centery=self.rect.height // 2)
+        return text_surface.get_rect()
 
 
 class ButtonTray(ComposableComponent):
@@ -85,7 +93,7 @@ class ButtonTray(ComposableComponent):
                 BorderedComponent(button, button_border),
             )
 
-    def get_state(self):
+    def get_state(self) -> StateEnum:
         return self.state.state
 
     def set_state(self, state: StateEnum):
@@ -93,8 +101,8 @@ class ButtonTray(ComposableComponent):
 
     def handle_button_click(
         self, button_name: str
-    ) -> Callable[[tuple[int, int]], None]:
-        def handler(_):
+    ) -> Callable[[pygame.event.Event], None]:
+        def handler(_: pygame.event.Event):
             self.set_state(StateEnum[button_name.upper()])
             print(f"{button_name} button clicked")
 
@@ -128,12 +136,8 @@ class AnnotatedComponent(ComposableComponent):
             background_color=annotation_background_color,
             text_color=annotation_color,
             font_ratio=1.0,
+            align="left",
         )
 
         self.add_component("annotation", annotation_button)
         self.add_component("component", component)
-
-    def update(self, event: pygame.event.Event):
-        if self.is_disabled:
-            return
-        self.components["component"].update(event)

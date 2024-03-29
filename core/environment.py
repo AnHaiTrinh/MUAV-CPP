@@ -12,12 +12,12 @@ class CellType(Enum):
 
 class Cell:
     def __init__(self, cell_type: CellType, r: int, c: int):
-        self.cell_type = cell_type
+        self.cell_type: CellType = cell_type
         self.r = r
         self.c = c
 
     def distance(self, other: "Cell") -> float:
-        return np.abs(self.c - other.c) + np.abs(self.r - other.r)
+        return np.sqrt(np.square(self.c - other.c) + np.square(self.r - other.r))
 
     def __str__(self):
         return f"Cell({self.cell_type.value}, {self.r}, {self.c})"

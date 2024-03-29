@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from enum import Enum
 
 from render import colors
@@ -14,7 +15,7 @@ class StateEnum(Enum):
 
 class State:
     def __init__(self):
-        self.state: StateEnum = StateEnum.EDIT
+        self.state: StateEnum = StateEnum.EDIT  # type: ignore
 
 
 class Component(ABC):
@@ -22,23 +23,28 @@ class Component(ABC):
         self.surface = surface
         self.rect = self.surface.get_rect(topleft=translation)
         self.is_disabled = False
+        self.handlers: list[Callable[[pygame.event.Event], None]] = []
 
     @abstractmethod
-    def render(self):
+    def render(self) -> None:
         pass
 
-    @abstractmethod
-    def update(self, event: pygame.event.Event):
-        pass
+    def update(self, event: pygame.event.Event) -> None:
+        if not self.is_disabled:
+            for handler in self.handlers:
+                handler(event)
 
     def is_clicked(self, event: pygame.event.Event) -> bool:
         return (
             event.type == pygame.MOUSEBUTTONDOWN
             and event.button == 1
-            and self.collide(event.pos)
+            and self._collide(event.pos)
         )
 
-    def collide(self, point: tuple[int, int]) -> bool:
+    def add_event_handler(self, handler: Callable[[pygame.event.Event], None]) -> None:
+        self.handlers.append(handler)
+
+    def _collide(self, point: tuple[int, int]) -> bool:
         return self.rect.collidepoint(point)
 
 
@@ -60,18 +66,14 @@ class BorderedComponent(Component):
             )
         )
         super().__init__(new_surface, translation)
+        self.add_event_handler(self.component.update)
 
-    def render(self):
+    def render(self) -> None:
         self.surface.fill(self.border_color)
         self.component.render()
         self.surface.blit(
             self.component.surface, (self.border_width, self.border_width)
         )
-
-    def update(self, event: pygame.event.Event):
-        if self.is_disabled:
-            return
-        self.component.update(event)
 
 
 class ComposableComponent(Component):
@@ -86,10 +88,15 @@ class ComposableComponent(Component):
         self.components: dict[str, Component] = {}
         self.background_color = background_color
 
-    def add_component(self, name: str, component: Component):
+    def add_component(self, name: str, component: Component) -> None:
         self.components[name] = component
+        self.add_event_handler(component.update)
 
-    def render(self):
+    def remove_component(self, name: str) -> None:
+        component = self.components.pop(name)
+        self.handlers.remove(component.update)
+
+    def render(self) -> None:
         self.surface.fill(self.background_color)
         for component in self.components.values():
             component.render()
@@ -97,9 +104,3 @@ class ComposableComponent(Component):
                 component.surface,
                 (component.rect.x - self.rect.x, component.rect.y - self.rect.y),
             )
-
-    def update(self, event: pygame.event.Event):
-        if self.is_disabled:
-            return
-        for component in self.components.values():
-            component.update(event)

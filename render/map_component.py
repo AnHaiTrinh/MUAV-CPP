@@ -21,8 +21,9 @@ class MapComponent(Component):
         self._map = resize_map(
             _map, self.rect.width // cell_width, self.rect.height // cell_height
         )
+        self.add_event_handler(self.click_handler)
 
-    def render(self):
+    def render(self) -> None:
         for i in range(self._map.width):
             for j in range(self._map.height):
                 cell_type = self._map.get_cell(i, j).cell_type
@@ -38,8 +39,8 @@ class MapComponent(Component):
                     ),
                 )
 
-    def update(self, event: pygame.event.Event):
-        if (not self.is_disabled) and self.is_clicked(event):
+    def click_handler(self, event: pygame.event.Event) -> None:
+        if self.is_clicked(event):
             absolute_mouse_pos_x, absolute_mouse_pos_y = event.pos
             mouse_pos_x = absolute_mouse_pos_x - self.rect.x
             mouse_pos_y = absolute_mouse_pos_y - self.rect.y
@@ -58,5 +59,5 @@ class MapComponent(Component):
             self.rect.height // self.cell_height,
         )
 
-    def get_map(self):
+    def get_map(self) -> Map:
         return self._map

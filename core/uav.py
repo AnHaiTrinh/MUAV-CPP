@@ -24,6 +24,9 @@ class UAV:
     def move(self) -> None:
         if self.pos_idx is None:
             raise ValueError("UAV position index is not initialized")
+        if self.trajectory is None:
+            raise ValueError("UAV trajectory is not initialized")
+
         self.pos_idx = (self.pos_idx + 1) % len(self.trajectory)
         next_cell = self.trajectory[self.pos_idx]
         self.r = next_cell.r
@@ -31,8 +34,8 @@ class UAV:
 
     def get_trajectory_length(self) -> float:
         if not self.trajectory:
-            return 0
-        distance = 0
+            return 0.0
+        distance = 0.0
         trajectory_length = len(self.trajectory)
         for i in range(trajectory_length):
             distance += self.trajectory[i].distance(

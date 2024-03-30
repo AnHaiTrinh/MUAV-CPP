@@ -2,7 +2,7 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 import pygame
 
-from core.environment import Map
+from core.environment import Map, CellType, Cell
 from core.uav import UAV
 from core.utils import load_map_from_file, save_map_to_file
 from render.base import BorderedComponent, ComposableComponent
@@ -74,7 +74,20 @@ class Renderer(ComposableComponent):
             AnnotatedComponent(self.remove_uav_slider, "Remove UAV Probability"),
         )
 
-        self.uavs = [UAV(f"UAV-{i}") for i in range(5)]
+        self.uavs = [
+            UAV(
+                f"UAV-{i}",
+                i * 10,
+                i * 10,
+                [Cell(CellType.FREE, i * 10 + j, i * 10 + j) for j in range(10)]
+                + [
+                    Cell(CellType.FREE, i * 10 + 9, i * 10 + 9 - j)
+                    for j in range(1, 10)
+                ]
+                + [Cell(CellType.FREE, i * 10 + 9 - j, i * 10) for j in range(1, 9)],
+            )
+            for i in range(5)
+        ]
         self._create_uav_panel()
 
         self.add_event_handler(self._handle_uav_change)
@@ -102,7 +115,7 @@ class Renderer(ComposableComponent):
                         component.is_disabled = True
 
                 if state == StateEnum.RUN:
-                    pass
+                    self._handle_run()
                 elif state == StateEnum.PAUSE:
                     continue
 
@@ -163,3 +176,10 @@ class Renderer(ComposableComponent):
             elif event.action == "remove":
                 self.uavs = [uav for uav in self.uavs if uav.name != event.uav_name]
             self._create_uav_panel()
+
+    def _handle_run(self):
+        if not self.map_component.uavs:
+            self.map_component.set_uavs(self.uavs)
+
+        for uav in self.uavs:
+            uav.move()

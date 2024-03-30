@@ -65,4 +65,4 @@ def resize_map(original_map: Map, target_width: int, target_height: int) -> Map:
 
 
 def uav_name_generator() -> str:
-    return 'UAV-' + ''.join(str(i) for i in choice(10, size=6))
+    return "UAV-" + "".join(str(i) for i in choice(10, size=6))

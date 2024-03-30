@@ -1,9 +1,11 @@
 import pygame
 
 from core.environment import Map, CellType
+from core.uav import UAV
 from core.utils import resize_map
 from render import colors
 from render.base import Component
+from render.colors import UAV_COLORS
 
 
 class MapComponent(Component):
@@ -23,21 +25,11 @@ class MapComponent(Component):
         )
         self.add_event_handler(self.click_handler)
 
+        self.uavs: list[UAV] = []
+
     def render(self) -> None:
-        for i in range(self._map.width):
-            for j in range(self._map.height):
-                cell_type = self._map.get_cell(i, j).cell_type
-                color = colors.WHITE if cell_type == CellType.FREE else colors.BLACK
-                pygame.draw.rect(
-                    self.surface,
-                    color,
-                    pygame.Rect(
-                        j * self.cell_width,
-                        i * self.cell_height,
-                        self.cell_width,
-                        self.cell_height,
-                    ),
-                )
+        self._draw_map()
+        self._draw_uav_trajectories()
 
     def click_handler(self, event: pygame.event.Event) -> None:
         if self.is_clicked(event):
@@ -61,3 +53,58 @@ class MapComponent(Component):
 
     def get_map(self) -> Map:
         return self._map
+
+    def _draw_map(self):
+        for i in range(self._map.width):
+            for j in range(self._map.height):
+                cell_type = self._map.get_cell(i, j).cell_type
+                color = colors.WHITE if cell_type == CellType.FREE else colors.BLACK
+                pygame.draw.rect(
+                    self.surface,
+                    color,
+                    pygame.Rect(
+                        j * self.cell_width,
+                        i * self.cell_height,
+                        self.cell_width,
+                        self.cell_height,
+                    ),
+                )
+
+    def set_uavs(self, uavs: list[UAV]) -> None:
+        self.uavs = uavs
+
+    def _draw_uav_trajectories(self):
+        for i, uav in enumerate(self.uavs):
+            # Draw trajectory
+            trajectory = uav.trajectory
+            if trajectory is None:
+                raise ValueError("UAV trajectory is None")
+
+            length = len(trajectory)
+            for j in range(length):
+                pygame.draw.line(
+                    self.surface,
+                    UAV_COLORS[i],
+                    (
+                        (trajectory[j].c + 0.5) * self.cell_width,
+                        (trajectory[j].r + 0.5) * self.cell_height,
+                    ),
+                    (
+                        (trajectory[(j + 1) % length].c + 0.5) * self.cell_width,
+                        (trajectory[(j + 1) % length].r + 0.5) * self.cell_height,
+                    ),
+                )
+
+            # Draw UAV
+            if uav.r is None or uav.c is None:
+                raise ValueError("UAV position is None")
+
+            pygame.draw.circle(
+                self.surface,
+                UAV_COLORS[i],
+                (
+                    int((uav.c + 0.5) * self.cell_width),
+                    int((uav.r + 0.5) * self.cell_height),
+                ),
+                min(self.cell_width, self.cell_height) // 2,
+            )

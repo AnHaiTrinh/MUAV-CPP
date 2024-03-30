@@ -18,7 +18,7 @@ class UAV:
         self.c = c
         self.trajectory = trajectory
         self.pos_idx: int | None = None
-        if self.r and self.c:
+        if self.r is not None and self.c is not None and self.trajectory is not None:
             self.init_position()
 
     def move(self) -> None:

@@ -74,7 +74,7 @@ class Renderer(ComposableComponent):
             AnnotatedComponent(self.remove_uav_slider, "Remove UAV Probability"),
         )
 
-        self.uavs = [UAV(f"UAV{i}") for i in range(5)]
+        self.uavs = [UAV(f"UAV-{i}") for i in range(5)]
         self._create_uav_panel()
 
         self.add_event_handler(self._handle_uav_change)

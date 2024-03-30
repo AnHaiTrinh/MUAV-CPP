@@ -1,21 +1,8 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from enum import Enum
 
 from render import colors
 import pygame
-
-
-class StateEnum(Enum):
-    EDIT = "edit"  # The user is editing the map
-    RUN = "run"  # The simulation is running
-    PAUSE = "pause"  # The simulation is paused
-    RESET = "reset"  # The simulation is being reset
-
-
-class State:
-    def __init__(self):
-        self.state: StateEnum = StateEnum.EDIT  # type: ignore
 
 
 class Component(ABC):
@@ -93,8 +80,9 @@ class ComposableComponent(Component):
         self.add_event_handler(component.update)
 
     def remove_component(self, name: str) -> None:
-        component = self.components.pop(name)
-        self.handlers.remove(component.update)
+        component = self.components.pop(name, None)
+        if component is not None:
+            self.handlers.remove(component.update)
 
     def render(self) -> None:
         self.surface.fill(self.background_color)

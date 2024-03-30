@@ -1,7 +1,10 @@
 import os.path
+import string
 
 import cv2
 import numpy as np
+from numpy.random import choice
+
 from core.environment import Map
 
 
@@ -60,3 +63,7 @@ def resize_map(original_map: Map, target_width: int, target_height: int) -> Map:
     )
     new_map = (new_map == 0).astype(np.uint8)
     return Map.from_numpy(new_map)
+
+
+def uav_name_generator() -> str:
+    return "".join(str(i) for i in choice(10, size=6))

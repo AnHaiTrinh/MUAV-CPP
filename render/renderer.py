@@ -3,8 +3,12 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename
 import pygame
 
 from core.environment import Map
+from core.uav import UAV
 from core.utils import load_map_from_file, save_map_to_file
-from render.base import BorderedComponent, ComposableComponent, StateEnum
+from render.base import BorderedComponent, ComposableComponent
+from render.events import UAV_COUNT_CHANGE_EVENT
+from render.panel import UAVPanel
+from render.state import StateEnum
 from render import colors
 from render.buttons import ButtonTray, AnnotatedComponent, Button
 from render.dropdown import DropDown
@@ -46,7 +50,7 @@ class Renderer(ComposableComponent):
         self.add_component("save", BorderedComponent(self.save_button, 5))
 
         self.dropdown = DropDown(
-            pygame.Surface((150, 210)),
+            pygame.Surface((180, 210)),
             (600, 20),
             ["Algo1", "Algo2", "Algo3", "Algo4"],
         )
@@ -70,7 +74,12 @@ class Renderer(ComposableComponent):
             AnnotatedComponent(self.remove_uav_slider, "Remove UAV Probability"),
         )
 
-        self.not_disabled = ["state", "new_uav_prob", "remove_uav_prob"]
+        self.uavs = [UAV(f"UAV{i}") for i in range(5)]
+        self._create_uav_panel()
+
+        self.add_event_handler(self._handle_uav_change)
+
+        self.not_disabled = ["state", "new_uav_prob", "remove_uav_prob", "uav_panel"]
 
         self.done = False
 
@@ -134,3 +143,23 @@ class Renderer(ComposableComponent):
 
         save_map_to_file(self.map_component.get_map(), filename)
         print(f"Map saved to {filename}")
+
+    def _create_uav_panel(self):
+        uav_panel = self.components.get("uav_panel", None)
+        if uav_panel is not None:
+            self.remove_component("uav_panel")
+
+        uav_panel = UAVPanel(
+            pygame.Surface((180, 500)),
+            (600, 250),
+            self.uavs,
+        )
+        self.add_component("uav_panel", uav_panel)
+
+    def _handle_uav_change(self, event: pygame.event.Event) -> None:
+        if event.type == UAV_COUNT_CHANGE_EVENT:
+            if event.action == "add":
+                self.uavs.append(UAV(event.uav_name))
+            elif event.action == "remove":
+                self.uavs = [uav for uav in self.uavs if uav.name != event.uav_name]
+            self._create_uav_panel()

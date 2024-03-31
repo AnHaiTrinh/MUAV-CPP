@@ -5,6 +5,7 @@ from core.utils import uav_name_generator
 from render import colors
 from render.base import ComposableComponent, BorderedComponent
 from render.buttons import Button
+from render.colors import UAV_COLORS
 from render.events import remove_uav_event, add_uav_event
 
 
@@ -14,6 +15,7 @@ class UAVSection(ComposableComponent):
         surface: pygame.Surface,
         translation: tuple[int, int],
         uav: UAV,
+        uav_color: colors.Color,
         background_color: colors.Color = colors.WHITE,
     ):
         super().__init__(surface, translation, background_color)
@@ -39,24 +41,21 @@ class UAVSection(ComposableComponent):
                 (self.rect.x, self.rect.y),
                 f"Name: {self.uav.name}",
                 background_color=colors.WHITE,
-                text_color=colors.BLACK,
+                text_color=uav_color,
                 font_ratio=0.6,
                 align="left",
             ),
         )
 
-        self.add_component("length_button", self._uav_trajectory_length_button())
-
-    def _uav_trajectory_length_button(self) -> Button:
-        return Button(
-            pygame.Surface((self.rect.width, self.rect.height // 2)),
-            (self.rect.x, self.rect.y + self.rect.height // 2),
-            f"Path length: {self.uav.get_trajectory_length():.2f}",
-            background_color=colors.WHITE,
-            text_color=colors.BLACK,
-            font_ratio=0.6,
-            align="left",
-        )
+        self.add_component("length_button", Button(
+                pygame.Surface((self.rect.width, self.rect.height // 2)),
+                (self.rect.x, self.rect.y + self.rect.height // 2),
+                f"Path length: {self.uav.get_trajectory_length():.2f}",
+                background_color=colors.WHITE,
+                text_color=uav_color,
+                font_ratio=0.6,
+                align="left",
+            ))
 
     def _close_button_click_handler(self, _: pygame.event.Event) -> None:
         pygame.event.post(remove_uav_event(self.uav.name))
@@ -75,7 +74,6 @@ class UAVPanel(ComposableComponent):
         super().__init__(surface, translation, background_color)
 
         # Create UAVs
-        self.uavs = uavs
         for idx, uav in enumerate(uavs):
             section = BorderedComponent(
                 UAVSection(
@@ -90,6 +88,7 @@ class UAVPanel(ComposableComponent):
                         self.rect.y + idx * section_height + section_border,
                     ),
                     uav,
+                    UAV_COLORS[idx],
                 ),
                 border_width=section_border,
             )

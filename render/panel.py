@@ -47,7 +47,9 @@ class UAVSection(ComposableComponent):
             ),
         )
 
-        self.add_component("length_button", Button(
+        self.add_component(
+            "length_button",
+            Button(
                 pygame.Surface((self.rect.width, self.rect.height // 2)),
                 (self.rect.x, self.rect.y + self.rect.height // 2),
                 f"Path length: {self.uav.get_trajectory_length():.2f}",
@@ -55,7 +57,8 @@ class UAVSection(ComposableComponent):
                 text_color=uav_color,
                 font_ratio=0.6,
                 align="left",
-            ))
+            ),
+        )
 
     def _close_button_click_handler(self, _: pygame.event.Event) -> None:
         pygame.event.post(remove_uav_event(self.uav.name))

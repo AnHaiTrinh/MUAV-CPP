@@ -15,8 +15,7 @@ class DropDown(Component):
         main_color: colors.Color = colors.CYAN,
     ):
         super().__init__(surface, translation)
-        self.values = tuple(values)
-        self.values_index_map = {value: idx for idx, value in enumerate(values)}
+        self.values = values
         self.selected = 0
         self.is_expanded = False
 
@@ -68,3 +67,6 @@ class DropDown(Component):
         text_surface = self.font.render(text, True, self.text_color)
         text_rect = text_surface.get_rect(center=rect.center)
         self.surface.blit(text_surface, text_rect)
+
+    def get_selected(self) -> str:
+        return self.values[self.selected]

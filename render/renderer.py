@@ -2,9 +2,13 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 import pygame
 
-from core.environment import Map, CellType, Cell
+from core.environment import Map
 from core.uav import UAV
 from core.utils import load_map_from_file, save_map_to_file
+from planner.cpp.continuous_planner import (
+    ContinuousCPPPlanner,
+    ContinuousCPPPlannerFactory,
+)
 from render.base import BorderedComponent, ComposableComponent
 from render.events import UAV_COUNT_CHANGE_EVENT
 from render.panel import UAVPanel
@@ -52,9 +56,11 @@ class Renderer(ComposableComponent):
         self.dropdown = DropDown(
             pygame.Surface((180, 210)),
             (600, 20),
-            ["Algo1", "Algo2", "Algo3", "Algo4"],
+            ["Dummy", "Algo1", "Algo2", "Algo3"],
         )
         self.add_component("dropdown", self.dropdown)
+
+        self.planner: ContinuousCPPPlanner | None = None
 
         self.new_uav_slider = Slider(
             pygame.Surface((200, 42)),
@@ -74,20 +80,7 @@ class Renderer(ComposableComponent):
             AnnotatedComponent(self.remove_uav_slider, "Remove UAV Probability"),
         )
 
-        self.uavs = [
-            UAV(
-                f"UAV-{i}",
-                i * 10,
-                i * 10,
-                [Cell(CellType.FREE, i * 10 + j, i * 10 + j) for j in range(10)]
-                + [
-                    Cell(CellType.FREE, i * 10 + 9, i * 10 + 9 - j)
-                    for j in range(1, 10)
-                ]
-                + [Cell(CellType.FREE, i * 10 + 9 - j, i * 10) for j in range(1, 9)],
-            )
-            for i in range(5)
-        ]
+        self.uavs = [UAV() for _ in range(5)]
         self._create_uav_panel()
 
         self.add_event_handler(self._handle_uav_change)
@@ -172,14 +165,21 @@ class Renderer(ComposableComponent):
     def _handle_uav_change(self, event: pygame.event.Event) -> None:
         if event.type == UAV_COUNT_CHANGE_EVENT:
             if event.action == "add":
-                self.uavs.append(UAV(event.uav_name))
+                self.planner.new_uav_plan(event.uav_name)
             elif event.action == "remove":
-                self.uavs = [uav for uav in self.uavs if uav.name != event.uav_name]
+                self.planner.remove_uav_plan(event.uav_name)
             self._create_uav_panel()
 
     def _handle_run(self):
         if not self.map_component.uavs:
             self.map_component.set_uavs(self.uavs)
+
+        if not self.planner:
+            self.planner = ContinuousCPPPlannerFactory.get_planner(
+                self.dropdown.get_selected(),
+                self.uavs,
+                self.map_component.get_map(),
+            )
 
         for uav in self.uavs:
             uav.move()

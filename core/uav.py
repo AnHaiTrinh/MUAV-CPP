@@ -43,12 +43,10 @@ class UAV:
             )
         return distance
 
-    def update_position(self, r: int, c: int) -> None:
-        self.r = r
-        self.c = c
-
     def update_trajectory(self, trajectory: list[Cell]) -> None:
         self.trajectory = trajectory
+        if self.r is None or self.c is None:
+            self.r, self.c = self.trajectory[0].r, self.trajectory[0].c
         self.init_position()
 
     def init_position(self):
@@ -60,7 +58,7 @@ class UAV:
                 break
         if not found:
             raise ValueError(
-                f"Initial position ({self.r}, {self.c}) not found in trajectory {self.trajectory}"
+                f"Initial position ({self.r}, {self.c}) not found in trajectory {[(cell.r, cell.c) for cell in self.trajectory]}"
             )
 
     def __str__(self):

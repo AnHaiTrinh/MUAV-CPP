@@ -164,6 +164,9 @@ class Renderer(ComposableComponent):
 
     def _handle_uav_change(self, event: pygame.event.Event) -> None:
         if event.type == UAV_COUNT_CHANGE_EVENT:
+            if self.planner is None:
+                raise ValueError("Planner not initialized")
+
             if event.action == "add":
                 self.planner.new_uav_plan(event.uav_name)
             elif event.action == "remove":

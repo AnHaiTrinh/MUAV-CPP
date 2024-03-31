@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from typing import Type
 
-from core.environment import Map, Cell, CellType
+from core.environment import Map
 from core.uav import UAV
 
 

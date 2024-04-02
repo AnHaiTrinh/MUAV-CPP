@@ -98,6 +98,8 @@ class Renderer(ComposableComponent):
 
             if self.state_button_tray.get_state() == StateEnum.RESET:
                 self.map_component.set_map(Map.create_empty_map(512, 512))
+                self.map_component.set_uavs([])
+                self.planner = None
                 self.state_button_tray.set_state(StateEnum.EDIT)
 
             state = self.state_button_tray.get_state()
@@ -165,7 +167,18 @@ class Renderer(ComposableComponent):
     def _handle_uav_change(self, event: pygame.event.Event) -> None:
         if event.type == UAV_COUNT_CHANGE_EVENT:
             if self.planner is None:
-                raise ValueError("Planner not initialized")
+                if self.state_button_tray.get_state() == StateEnum.EDIT:
+                    if event.action == "add":
+                        self.uavs.append(UAV(event.uav_name))
+                    elif event.action == "remove":
+                        for i, uav in enumerate(self.uavs):
+                            if uav.name == event.uav_name:
+                                self.uavs.remove(uav)
+                                break
+                    self._create_uav_panel()
+                    return
+                else:
+                    raise ValueError("Planner not initialized")
 
             if event.action == "add":
                 self.planner.new_uav_plan(event.uav_name)
@@ -176,6 +189,7 @@ class Renderer(ComposableComponent):
     def _handle_run(self):
         if not self.map_component.uavs:
             self.map_component.set_uavs(self.uavs)
+            self._create_uav_panel()
 
         if not self.planner:
             self.planner = ContinuousCPPPlannerFactory.get_planner(

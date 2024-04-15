@@ -1,4 +1,5 @@
-from core.environment import Cell, CellType, Map
+from core.cell import Cell, CellType
+from core.map import Map
 from core.uav import UAV
 from planner.cpp.continuous_planner import ContinuousCPPPlanner
 

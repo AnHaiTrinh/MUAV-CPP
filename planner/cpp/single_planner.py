@@ -1,7 +1,8 @@
 from abc import abstractmethod, ABC
 from typing import Type
 
-from core.environment import Cell
+from core.uav import UAV
+from core.map import Map
 
 
 class SingleCPPPlanner(ABC):
@@ -15,7 +16,12 @@ class SingleCPPPlanner(ABC):
         super().__init_subclass__(**kwargs)
 
     @abstractmethod
-    def plan(self, area: list[Cell], pos: Cell) -> list[Cell]:
+    def plan(self, area: Map, uav: UAV) -> None:
+        """
+        Update the trajectory of the UAV inplace
+        :param area: the map of the environment
+        :param uav: UAV to be planned
+        """
         pass
 
 

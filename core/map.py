@@ -1,26 +1,7 @@
-from enum import Enum
-
 import numpy as np
 
-
-class CellType(Enum):
-    FREE = 0
-    OCCUPIED = 1
-    UAV = 2
-    BASE = 3
-
-
-class Cell:
-    def __init__(self, cell_type: CellType, r: int, c: int):
-        self.cell_type: CellType = cell_type
-        self.r = r
-        self.c = c
-
-    def distance(self, other: "Cell") -> float:
-        return np.sqrt(np.square(self.c - other.c) + np.square(self.r - other.r))
-
-    def __str__(self):
-        return f"Cell({self.cell_type.value}, {self.r}, {self.c})"
+from core.cell import Cell, CellType
+from core.uav import UAV
 
 
 class Map:
@@ -58,6 +39,9 @@ class Map:
             [[cell.cell_type.value for cell in row] for row in self.cells],
             dtype=np.uint8,
         )
+
+    def assign(self, r: int, c: int, uav: UAV) -> None:
+        self.cells[r][c].assign = uav.name
 
     def __repr__(self):
         return "\n".join("\t".join(str(cell) for cell in row) for row in self.cells)

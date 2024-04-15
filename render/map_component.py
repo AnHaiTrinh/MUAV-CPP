@@ -1,6 +1,7 @@
 import pygame
 
-from core.environment import Map, CellType
+from core.cell import CellType
+from core.map import Map
 from core.uav import UAV
 from core.utils import resize_map
 from render import colors

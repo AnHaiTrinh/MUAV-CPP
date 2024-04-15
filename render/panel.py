@@ -1,7 +1,6 @@
 import pygame
 
-from core.uav import UAV
-from core.utils import uav_name_generator
+from core.uav import UAV, uav_name_generator
 from render import colors
 from render.base import ComposableComponent, BorderedComponent
 from render.buttons import Button

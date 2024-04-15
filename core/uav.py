@@ -1,15 +1,16 @@
-from core.environment import Cell
-from core.utils import uav_name_generator
+from numpy.random import choice
+
+from core.cell import Cell
 from render.colors import ColorManager
 
 
 class UAV:
     def __init__(
-        self,
-        name: str | None = None,
-        r: int | None = None,
-        c: int | None = None,
-        trajectory: list[Cell] | None = None,
+            self,
+            name: str | None = None,
+            r: int | None = None,
+            c: int | None = None,
+            trajectory: list[Cell] | None = None,
     ):
         if name is None:
             self.name = uav_name_generator()
@@ -65,3 +66,7 @@ class UAV:
 
     def __str__(self):
         return f"UAV {self.name}"
+
+
+def uav_name_generator() -> str:
+    return "UAV-" + "".join(str(i) for i in choice(10, size=6))

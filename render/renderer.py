@@ -2,7 +2,7 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 import pygame
 
-from core.environment import Map
+from core.map import Map
 from core.uav import UAV
 from core.utils import load_map_from_file, save_map_to_file
 from planner.cpp.continuous_planner import (

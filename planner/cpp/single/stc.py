@@ -1,4 +1,4 @@
-from planner.cpp.single_planner import SingleCPPPlanner
+from planner.cpp.single.single_planner import SingleCPPPlanner
 from core.map import Map
 from core.uav import UAV
 

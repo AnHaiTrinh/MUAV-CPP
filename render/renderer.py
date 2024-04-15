@@ -5,7 +5,7 @@ import pygame
 from core.map import Map
 from core.uav import UAV
 from core.utils import load_map_from_file, save_map_to_file
-from planner.cpp.continuous_planner import (
+from planner.cpp.continuous.continuous_planner import (
     ContinuousCPPPlanner,
     ContinuousCPPPlannerFactory,
 )

@@ -1,7 +1,7 @@
 import pygame
 
-from render import colors
-from render.base import Component
+from src.render import colors
+from src.render.base import Component
 
 
 class DropDown(Component):

@@ -1,10 +1,10 @@
 import pygame
 
-from core.uav import UAV, uav_name_generator
-from render import colors
-from render.base import ComposableComponent, BorderedComponent
-from render.buttons import Button
-from render.events import remove_uav_event, add_uav_event
+from src.core.uav import UAV, uav_name_generator
+from src.render import colors
+from src.render.base import ComposableComponent, BorderedComponent
+from src.render.buttons import Button
+from src.render.events import remove_uav_event, add_uav_event
 
 
 class UAVSection(ComposableComponent):

@@ -1,8 +1,8 @@
 from abc import abstractmethod, ABC
 from typing import Type
 
-from core.uav import UAV
-from core.map import Map
+from src.core.uav import UAV
+from src.core.map import Map
 
 
 class SingleCPPPlanner(ABC):

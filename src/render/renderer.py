@@ -2,28 +2,29 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 import pygame
 
-from core.map import Map
-from core.uav import UAV
-from core.utils import load_map_from_file, save_map_to_file
-from planner.cpp.continuous.continuous_planner import (
+from src.core.map import Map
+from src.core.uav import UAV
+from src.core.utils import load_map_from_file, save_map_to_file
+from src.planner.cpp.continuous.continuous_planner import (
     ContinuousCPPPlanner,
     ContinuousCPPPlannerFactory,
 )
-from render.base import BorderedComponent, ComposableComponent
-from render.colors import ColorManager
-from render.events import UAV_COUNT_CHANGE_EVENT
-from render.panel import UAVPanel
-from render.state import StateEnum
-from render import colors
-from render.buttons import ButtonTray, AnnotatedComponent, Button
-from render.dropdown import DropDown
-from render.map_component import MapComponent
-from render.slider import Slider
+from src.render.base import BorderedComponent, ComposableComponent
+from src.render.colors import ColorManager
+from src.render.events import UAV_COUNT_CHANGE_EVENT
+from src.render.panel import UAVPanel
+from src.render.state import StateEnum
+from src.render import colors
+from src.render.buttons import ButtonTray, AnnotatedComponent, Button
+from src.render.dropdown import DropDown
+from src.render.map_component import MapComponent
+from src.render.slider import Slider
 
 
 class Renderer(ComposableComponent):
     def __init__(
         self,
+        num_uavs: int = 5,
         map_size: tuple[int, int] = (512, 512),
         size: tuple[int, int] = (800, 800),
         background_color: colors.Color = colors.WHITE,
@@ -84,7 +85,7 @@ class Renderer(ComposableComponent):
             AnnotatedComponent(self.remove_uav_slider, "Remove UAV Probability"),
         )
 
-        self.uavs = [UAV() for _ in range(5)]
+        self.uavs = [UAV() for _ in range(num_uavs)]
         self._create_uav_panel()
 
         self.add_event_handler(self._handle_uav_change)

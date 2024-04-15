@@ -1,11 +1,11 @@
 import pygame
 
-from core.cell import CellType
-from core.map import Map
-from core.uav import UAV
-from core.utils import resize_map
-from render import colors
-from render.base import Component
+from src.core.cell import CellType
+from src.core.map import Map
+from src.core.uav import UAV
+from src.core.utils import resize_map
+from src.render import colors
+from src.render.base import Component
 
 
 class MapComponent(Component):

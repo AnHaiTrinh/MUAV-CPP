@@ -1,7 +1,7 @@
 import numpy as np
 
-from core.cell import Cell, CellType
-from core.uav import UAV
+from src.core.cell import Cell, CellType
+from src.core.uav import UAV
 
 
 class Map:

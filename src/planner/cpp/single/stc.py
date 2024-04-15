@@ -1,6 +1,6 @@
-from planner.cpp.single.single_planner import SingleCPPPlanner
-from core.map import Map
-from core.uav import UAV
+from src.planner.cpp.single.single_planner import SingleCPPPlanner
+from src.core.map import Map
+from src.core.uav import UAV
 
 
 class SimpleSTCPlanner(SingleCPPPlanner):

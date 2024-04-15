@@ -2,9 +2,9 @@ from collections.abc import Callable
 
 import pygame
 
-from render.base import Component, ComposableComponent, BorderedComponent
-from render.state import StateEnum, State
-from render import colors
+from src.render.base import Component, ComposableComponent, BorderedComponent
+from src.render.state import StateEnum, State
+from src.render import colors
 
 
 class Button(Component):

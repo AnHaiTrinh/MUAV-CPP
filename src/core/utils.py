@@ -2,9 +2,8 @@ import os.path
 
 import cv2
 import numpy as np
-from numpy.random import choice
 
-from core.map import Map
+from src.core.map import Map
 
 
 def load_map_from_file(filepath: str) -> Map:

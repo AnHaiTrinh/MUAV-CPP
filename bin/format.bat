@@ -1,1 +1,1 @@
-black main.py core\ planner\ render\
+black main.py src\

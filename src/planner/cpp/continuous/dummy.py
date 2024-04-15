@@ -1,7 +1,7 @@
 from src.core.cell import Cell, CellType
 from src.core.map import Map
 from src.core.uav import UAV
-from src.planner.cpp.continuous.continuous_planner import ContinuousCPPPlanner
+from src.planner.cpp.continuous.planner import ContinuousCPPPlanner
 
 
 class DummyContinuousCPPPlanner(ContinuousCPPPlanner):

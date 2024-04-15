@@ -6,11 +6,11 @@ from src.render.colors import ColorManager
 
 class UAV:
     def __init__(
-            self,
-            name: str | None = None,
-            r: int | None = None,
-            c: int | None = None,
-            trajectory: list[Cell] | None = None,
+        self,
+        name: str | None = None,
+        r: int | None = None,
+        c: int | None = None,
+        trajectory: list[Cell] | None = None,
     ):
         if name is None:
             self.name = uav_name_generator()

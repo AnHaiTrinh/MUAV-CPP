@@ -18,14 +18,29 @@ DARK_PURPLE = (128, 0, 128)
 DARK_PINK = (139, 0, 139)
 DARK_BROWN = (139, 69, 19)
 
-UAV_COLORS = [
-    DARK_RED,
-    DARK_GREEN,
-    DARK_BLUE,
-    DARK_YELLOW,
-    DARK_MAGENTA,
+_UAV_COLORS = [
     DARK_ORANGE,
     DARK_PURPLE,
     DARK_PINK,
     DARK_BROWN,
+    DARK_RED,
+    DARK_GREEN,
+    DARK_BLUE,
+    DARK_YELLOW,
 ]
+
+
+class ColorManager:
+    colors: list[Color] = _UAV_COLORS
+
+    @classmethod
+    def get_color(cls) -> Color:
+        try:
+            color = cls.colors.pop()
+            return color
+        except IndexError:
+            raise ValueError("No more colors available")
+
+    @classmethod
+    def release_color(cls, color: Color) -> None:
+        cls.colors.append(color)

@@ -1,5 +1,6 @@
 from core.environment import Cell
 from core.utils import uav_name_generator
+from render.colors import ColorManager
 
 
 class UAV:
@@ -20,6 +21,7 @@ class UAV:
         self.pos_idx: int | None = None
         if self.r is not None and self.c is not None and self.trajectory is not None:
             self.init_position()
+        self.color = ColorManager.get_color()
 
     def move(self) -> None:
         if self.pos_idx is None:

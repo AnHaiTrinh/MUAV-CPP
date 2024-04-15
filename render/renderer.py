@@ -10,6 +10,7 @@ from planner.cpp.continuous_planner import (
     ContinuousCPPPlannerFactory,
 )
 from render.base import BorderedComponent, ComposableComponent
+from render.colors import ColorManager
 from render.events import UAV_COUNT_CHANGE_EVENT
 from render.panel import UAVPanel
 from render.state import StateEnum
@@ -173,6 +174,7 @@ class Renderer(ComposableComponent):
                     elif event.action == "remove":
                         for i, uav in enumerate(self.uavs):
                             if uav.name == event.uav_name:
+                                ColorManager.release_color(uav.color)
                                 self.uavs.remove(uav)
                                 break
                     self._create_uav_panel()

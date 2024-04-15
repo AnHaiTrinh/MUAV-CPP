@@ -5,7 +5,6 @@ from core.utils import uav_name_generator
 from render import colors
 from render.base import ComposableComponent, BorderedComponent
 from render.buttons import Button
-from render.colors import UAV_COLORS
 from render.events import remove_uav_event, add_uav_event
 
 
@@ -91,7 +90,7 @@ class UAVPanel(ComposableComponent):
                         self.rect.y + idx * section_height + section_border,
                     ),
                     uav,
-                    UAV_COLORS[idx],
+                    uav.color,
                 ),
                 border_width=section_border,
             )

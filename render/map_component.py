@@ -5,7 +5,6 @@ from core.uav import UAV
 from core.utils import resize_map
 from render import colors
 from render.base import Component
-from render.colors import UAV_COLORS
 
 
 class MapComponent(Component):
@@ -74,7 +73,7 @@ class MapComponent(Component):
         self.uavs = uavs
 
     def _draw_uav_trajectories(self):
-        for i, uav in enumerate(self.uavs):
+        for uav in self.uavs:
             # Draw trajectory
             trajectory = uav.trajectory
             if trajectory is None:
@@ -84,7 +83,7 @@ class MapComponent(Component):
             for j in range(length):
                 pygame.draw.line(
                     self.surface,
-                    UAV_COLORS[i],
+                    uav.color,
                     (
                         (trajectory[j].c + 0.5) * self.cell_width,
                         (trajectory[j].r + 0.5) * self.cell_height,
@@ -101,7 +100,7 @@ class MapComponent(Component):
 
             pygame.draw.circle(
                 self.surface,
-                UAV_COLORS[i],
+                uav.color,
                 (
                     int((uav.c + 0.5) * self.cell_width),
                     int((uav.r + 0.5) * self.cell_height),

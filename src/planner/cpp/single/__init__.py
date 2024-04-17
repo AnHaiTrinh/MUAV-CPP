@@ -1,1 +1,1 @@
-from src.planner.cpp.single.stc import SimpleSTCPlanner
+from src.planner.cpp.single.stc import STCPlanner

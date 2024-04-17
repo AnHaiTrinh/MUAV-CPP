@@ -1,1 +1,1 @@
-black main.py src\
+black main.py src\ tests\

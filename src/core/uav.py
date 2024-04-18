@@ -35,7 +35,8 @@ class UAV:
         self.r = next_cell.r
         self.c = next_cell.c
 
-    def get_trajectory_length(self) -> float:
+    @property
+    def trajectory_length(self) -> float:
         if not self.trajectory:
             return 0.0
         distance = 0.0

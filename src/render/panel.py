@@ -50,7 +50,7 @@ class UAVSection(ComposableComponent):
             Button(
                 pygame.Surface((self.rect.width, self.rect.height // 2)),
                 (self.rect.x, self.rect.y + self.rect.height // 2),
-                f"Path length: {self.uav.get_trajectory_length():.2f}",
+                f"Path length: {self.uav.trajectory_length:.2f}",
                 background_color=colors.WHITE,
                 text_color=uav_color,
                 font_ratio=0.6,

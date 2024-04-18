@@ -17,6 +17,10 @@ class Cell:
         self.c = c
         self.assign = assign
 
+    @property
+    def coordinate(self) -> tuple[int, int]:
+        return self.r, self.c
+
     def distance(self, other: "Cell") -> float:
         return np.sqrt(np.square(self.c - other.c) + np.square(self.r - other.r))
 

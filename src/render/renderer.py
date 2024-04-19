@@ -6,8 +6,8 @@ from src.core.map import Map
 from src.core.uav import UAV
 from src.core.utils import load_map_from_file, save_map_to_file
 from src.planner.cpp.continuous.planner import (
-    ContinuousCPPPlanner,
-    ContinuousCPPPlannerFactory,
+    ContinuousCoveragePathPlanner,
+    ContinuousCoveragePathPlannerFactory,
 )
 from src.render.base import BorderedComponent, ComposableComponent
 from src.render.colors import ColorManager
@@ -65,7 +65,7 @@ class Renderer(ComposableComponent):
         )
         self.add_component("dropdown", self.dropdown)
 
-        self.planner: ContinuousCPPPlanner | None = None
+        self.planner: ContinuousCoveragePathPlanner | None = None
 
         self.new_uav_slider = Slider(
             pygame.Surface((200, 42)),
@@ -198,7 +198,7 @@ class Renderer(ComposableComponent):
             self._create_uav_panel()
 
         if not self.planner:
-            self.planner = ContinuousCPPPlannerFactory.get_planner(
+            self.planner = ContinuousCoveragePathPlannerFactory.get_planner(
                 self.dropdown.get_selected(),
                 self.uavs,
                 self.map_component.get_map(),

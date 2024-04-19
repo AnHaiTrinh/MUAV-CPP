@@ -1,12 +1,12 @@
 from collections import defaultdict
 
 from src.core.cell import Cell, CellType
-from src.planner.cpp.single.planner import SingleCPPPlanner
+from src.planner.cpp.single.planner import SingleCoveragePathPlanner
 from src.core.map import Map
 from src.core.uav import UAV
 
 
-class STCPlanner(SingleCPPPlanner):
+class STCPlanner(SingleCoveragePathPlanner):
     name = "STC"
 
     def __init__(self, area: Map, uav: UAV, **kwargs):

@@ -5,7 +5,7 @@ from src.core.map import Map
 from src.core.uav import UAV
 
 
-class ContinuousCPPPlanner(ABC):
+class ContinuousCoveragePathPlanner(ABC):
     name: str
 
     def __init__(self, uavs: list[UAV], _map: Map, **kwargs):
@@ -15,7 +15,7 @@ class ContinuousCPPPlanner(ABC):
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        ContinuousCPPPlannerFactory.register(cls.name, cls)
+        ContinuousCoveragePathPlannerFactory.register(cls.name, cls)
 
     @abstractmethod
     def init_plan(self) -> None:
@@ -30,18 +30,18 @@ class ContinuousCPPPlanner(ABC):
         pass
 
 
-class ContinuousCPPPlannerFactory:
-    _registry: dict[str, Type[ContinuousCPPPlanner]] = {}
+class ContinuousCoveragePathPlannerFactory:
+    _registry: dict[str, Type[ContinuousCoveragePathPlanner]] = {}
 
     @classmethod
     def get_planner(
         cls, name: str, uavs: list[UAV], _map: Map, **kwargs
-    ) -> ContinuousCPPPlanner:
+    ) -> ContinuousCoveragePathPlanner:
         planner_cls = cls._registry.get(name, None)
         if planner_cls is None:
             raise ValueError(f"Planner {name} not found")
         return planner_cls(uavs, _map, **kwargs)
 
     @classmethod
-    def register(cls, name: str, planner: Type[ContinuousCPPPlanner]):
+    def register(cls, name: str, planner: Type[ContinuousCoveragePathPlanner]):
         cls._registry[name] = planner

@@ -1,10 +1,10 @@
 from src.core.cell import Cell, CellType
 from src.core.map import Map
 from src.core.uav import UAV
-from src.planner.cpp.continuous.planner import ContinuousCPPPlanner
+from src.planner.cpp.continuous.planner import ContinuousCoveragePathPlanner
 
 
-class DummyContinuousCPPPlanner(ContinuousCPPPlanner):
+class DummyContinuousCoveragePathPlanner(ContinuousCoveragePathPlanner):
     name = "Dummy"
 
     def __init__(self, uavs: list[UAV], _map: Map, **kwargs):

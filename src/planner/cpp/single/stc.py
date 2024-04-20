@@ -165,9 +165,6 @@ class STCPlanner(SingleCoveragePathPlanner):
         coverage_trajectory = [
             self.area.get_cell(*pos) for pos in _deduplicate_path(coverage_path)
         ]
-        for cell in coverage_trajectory:
-            if cell.cell_type == CellType.OCCUPIED:
-                raise ValueError("Invalid coverage path")
         self.uav.update_trajectory(coverage_trajectory)
 
     def _kruskal(

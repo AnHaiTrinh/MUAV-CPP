@@ -25,12 +25,13 @@ class Renderer(ComposableComponent):
     def __init__(
         self,
         num_uavs: int = 5,
-        map_size: tuple[int, int] = (512, 512),
+        map_size: tuple[int, int] = (128, 128),
         size: tuple[int, int] = (800, 800),
         background_color: colors.Color = colors.WHITE,
     ):
         pygame.init()
         self.surface = pygame.display.set_mode(size)
+        self.clock = pygame.time.Clock()
         pygame.display.set_caption("MUAV-CPP")
         super().__init__(self.surface, (0, 0), background_color)
 
@@ -61,7 +62,7 @@ class Renderer(ComposableComponent):
         self.dropdown = DropDown(
             pygame.Surface((180, 210)),
             (600, 20),
-            ["Dummy", "Algo1", "Algo2", "Algo3"],
+            ["Dummy", "Single", "Algo2", "Algo3"],
         )
         self.add_component("dropdown", self.dropdown)
 
@@ -105,6 +106,9 @@ class Renderer(ComposableComponent):
                 self.map_component.set_map(Map.create_empty_map(512, 512))
                 self.map_component.set_uavs([])
                 self.planner = None
+                for uav in self.uavs:
+                    uav.reset()
+                self._create_uav_panel()
                 self.state_button_tray.set_state(StateEnum.EDIT)
 
             state = self.state_button_tray.get_state()
@@ -125,6 +129,7 @@ class Renderer(ComposableComponent):
 
             self.render()
             pygame.display.flip()
+            # self.clock.tick(60)
         pygame.quit()
 
     def _load_handler(self, _: pygame.event.Event) -> None:
@@ -193,16 +198,17 @@ class Renderer(ComposableComponent):
             self._create_uav_panel()
 
     def _handle_run(self):
-        if not self.map_component.uavs:
-            self.map_component.set_uavs(self.uavs)
-            self._create_uav_panel()
-
         if not self.planner:
             self.planner = ContinuousCoveragePathPlannerFactory.get_planner(
                 self.dropdown.get_selected(),
                 self.uavs,
                 self.map_component.get_map(),
+                single_planner="STC",
             )
+
+        if not self.map_component.uavs:
+            self.map_component.set_uavs(self.uavs)
+            self._create_uav_panel()
 
         for uav in self.uavs:
             uav.move()

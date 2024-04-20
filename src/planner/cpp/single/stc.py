@@ -1,5 +1,7 @@
 from collections import defaultdict
 
+import numpy as np
+
 from src.core.cell import Cell, CellType
 from src.planner.cpp.single.planner import SingleCoveragePathPlanner
 from src.core.map import Map
@@ -53,7 +55,6 @@ class STCPlanner(SingleCoveragePathPlanner):
         def is_valid_movement(
             current: tuple[int, int],
             direction: tuple[int, int],
-            check_visited: bool = True,
         ) -> bool:
             current_r, current_c = current
             dx, dy = direction
@@ -61,7 +62,7 @@ class STCPlanner(SingleCoveragePathPlanner):
             if next_r == -1 or next_r == height or next_c == -1 or next_c == width:
                 return False
             _next = (next_r, next_c)
-            if check_visited and _next in visited:
+            if _next in visited:
                 return False
 
             current_mega_cell = self._cell_to_mega_cell(current)
@@ -70,9 +71,9 @@ class STCPlanner(SingleCoveragePathPlanner):
                 return next_mega_cell in adj_list[current_mega_cell]
 
             def get_neighbor_mega_cell(
-                curr: tuple[int, int], nxt: tuple[int, int], mega_cell: tuple[int, int]
+                curr: tuple[int, int], nxt: tuple[int, int]
             ) -> tuple[int, int]:
-                mega_r, mega_c = mega_cell
+                mega_r, mega_c = self._cell_to_mega_cell(curr)
                 current_and_next = {curr, nxt}
                 if current_and_next == {
                     (mega_r << 1, mega_c << 1),
@@ -92,12 +93,11 @@ class STCPlanner(SingleCoveragePathPlanner):
 
                 return mega_r, mega_c + 1
 
-            neighbor_mega_cell = get_neighbor_mega_cell(
-                current, _next, current_mega_cell
-            )
+            neighbor_mega_cell = get_neighbor_mega_cell(current, _next)
             return not (neighbor_mega_cell in adj_list[current_mega_cell])
 
         current_pos = start_pos
+        last_dir = (1, 0)
         stop = False
         while not stop:
             stop = True
@@ -106,16 +106,24 @@ class STCPlanner(SingleCoveragePathPlanner):
                     next_pos = (current_pos[0] + d[0], current_pos[1] + d[1])
                     visited.add(next_pos)
                     # If next cell is free, add it to the coverage path
-                    if self.area.get_cell(*next_pos).cell_type == CellType.FREE:
+                    next_cell = self.area.get_cell(*next_pos)
+                    if next_cell.cell_type == CellType.FREE:
+                        current_cell = self.area.get_cell(*coverage_path[-1])
+                        if current_cell.distance(next_cell) > np.sqrt(2):
+                            next_coverage_pos = (current_pos[0] + last_dir[0], current_pos[1] + last_dir[1])
+                            if self.area.get_cell(*next_coverage_pos).cell_type == CellType.FREE:
+                                coverage_path.append(next_coverage_pos)
                         coverage_path.append(next_pos)
                     else:
                         # Only move if the current cell is the last cell on the coverage path or the current cell is
-                        # symmetric to the last cell on the coverage path with respect to the movement direction.
+                        # symmetric to the last cell on the coverage path.
                         # If the current cell is equal to the last cell on the coverage path, add the cell symmetric to
                         # the next cell to the coverage path if it is free. If that cell is occupied, do nothing.
-                        # If the current cell is symmetric to the last cell on the coverage path, then move in
-                        # the same direction from where you are (last cell on the coverage path). If the movement
-                        # is valid and the next cell is free, add it to the coverage path, otherwise do nothing.
+                        # If the current cell is symmetric to the last cell on the coverage path with respect to
+                        # the movement direction, then move in the same direction from the last cell on the
+                        # coverage path. If the next cell is free, add it to the coverage path, otherwise do nothing.
+                        # If the current cell is symmetric to the last cell on the coverage path in the other direction,
+                        # (orthogonal to the movement direction), then move in the same direction from the last cell on
                         last_coverage_cell = coverage_path[-1]
                         if last_coverage_cell == current_pos:
                             symmetric_next_cell = self._symmetric_cell(next_pos, d)
@@ -125,25 +133,52 @@ class STCPlanner(SingleCoveragePathPlanner):
                             ):
                                 coverage_path.append(symmetric_next_cell)
                         elif self._symmetric_cell(current_pos, d) == last_coverage_cell:
-                            if is_valid_movement(
-                                last_coverage_cell, d, check_visited=False
+                            next_coverage_cell = (
+                                last_coverage_cell[0] + d[0],
+                                last_coverage_cell[1] + d[1],
+                            )
+                            if (
+                                self.area.get_cell(*next_coverage_cell).cell_type
+                                == CellType.FREE
                             ):
-                                next_coverage_cell = (
-                                    last_coverage_cell[0] + d[0],
-                                    last_coverage_cell[1] + d[1],
+                                coverage_path.append(next_coverage_cell)
+                        elif self._symmetric_cell(current_pos, last_dir) == last_coverage_cell:
+                            """
+                                 1 | 0
+                            1->^ 1 | 0 
+                            -------+--
+                            0 -> 0 |
+                            """
+                            next_coverage_cell = (
+                                last_coverage_cell[0] + last_dir[0] + d[0],
+                                last_coverage_cell[1] + last_dir[1] + d[1],
+                            )
+                            if (
+                                self.area.get_cell(*next_coverage_cell).cell_type
+                                == CellType.FREE
+                            ):
+                                coverage_path.append(next_coverage_cell)
+                                next_next_coverage_cell = (
+                                    next_coverage_cell[0] + d[0],
+                                    next_coverage_cell[1] + d[1],
                                 )
                                 if (
-                                    self.area.get_cell(*next_coverage_cell).cell_type
+                                    self.area.get_cell(*next_next_coverage_cell).cell_type
                                     == CellType.FREE
                                 ):
-                                    coverage_path.append(next_coverage_cell)
+                                    coverage_path.append(next_next_coverage_cell)
+
                     current_pos = next_pos
+                    last_dir = d
                     stop = False
                     break
 
         coverage_trajectory = [
             self.area.get_cell(*pos) for pos in _deduplicate_path(coverage_path)
         ]
+        for cell in coverage_trajectory:
+            if cell.cell_type == CellType.OCCUPIED:
+                raise ValueError("Invalid coverage path")
         self.uav.update_trajectory(coverage_trajectory)
 
     def _kruskal(
@@ -205,6 +240,33 @@ class STCPlanner(SingleCoveragePathPlanner):
                     adj_list[secondary_neighbor].append(mega_cell)
                     if uf.n_components == 1:
                         return adj_list
+        return adj_list
+
+    def _dfs(self, start_cell: tuple[int, int]) -> dict[tuple[int, int], list[tuple[int, int]]]:
+        """
+        Minimum Spanning Tree of Mega Graph using Depth First Search
+        :param start_cell: the starting cell
+        :return: the path in the Mega Graph
+        """
+        start_mega_cell = self._cell_to_mega_cell(start_cell)
+        assert self._mega_cell_type(start_mega_cell) == CellType.FREE
+
+        parents: dict[tuple[int, int], tuple[int, int] | None] = {}
+        stack: list[tuple[tuple[int, int], tuple[int, int] | None]] = [(start_mega_cell, None)]
+        while stack:
+            current, parent = stack.pop()
+            if current in parents:
+                continue
+            parents[current] = parent
+            neighbors, secondary_neighbors = self._neighbor(current)
+            for neighbor in neighbors + secondary_neighbors:
+                stack.append((neighbor, current))
+
+        adj_list = defaultdict(list)
+        for mega_cell, parent in parents.items():
+            if parent is not None:
+                adj_list[mega_cell].append(parent)
+                adj_list[parent].append(mega_cell)
         return adj_list
 
     def _top_left(self, mega_cell_coordinate: tuple[int, int]) -> Cell:
@@ -353,4 +415,6 @@ def _deduplicate_path(path: list[tuple[int, int]]) -> list[tuple[int, int]]:
     for i in range(1, len(path)):
         if path[i] != path[i - 1]:
             deduplicated_path.append(path[i])
+            if (path[i][0] - path[i-1][0]) ** 2 + (path[i][1] - path[i-1][1]) ** 2 > 2:
+                print(path[i - 3], path[i - 2], path[i-1], path[i])
     return deduplicated_path

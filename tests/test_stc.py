@@ -20,9 +20,10 @@ def _assert_trajectory(_uav: UAV, length: float) -> None:
     diff = abs(got - length)
     try:
         assert diff < 1e-2
+        print("OK")
     except AssertionError:
         print(f"FAILED: got {got}, want {length}")
-    print("OK")
+        print([(cell.r, cell.c) for cell in _uav.trajectory])
 
 
 for test_map_path, want_length in test_suite:

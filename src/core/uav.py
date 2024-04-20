@@ -65,7 +65,12 @@ class UAV:
                 f"Initial position ({self.r}, {self.c}) not found in trajectory {[(cell.r, cell.c) for cell in self.trajectory]}"
             )
 
-    def __str__(self):
+    def reset(self):
+        self.r = None
+        self.c = None
+        self.trajectory = None
+
+    def __repr__(self):
         return f"UAV {self.name}"
 
 

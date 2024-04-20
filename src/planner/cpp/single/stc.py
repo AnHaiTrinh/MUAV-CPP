@@ -1,7 +1,5 @@
 from collections import defaultdict
 
-import numpy as np
-
 from src.core.cell import Cell, CellType
 from src.planner.cpp.single.planner import SingleCoveragePathPlanner
 from src.core.map import Map
@@ -105,69 +103,60 @@ class STCPlanner(SingleCoveragePathPlanner):
                 if is_valid_movement(current_pos, d):
                     next_pos = (current_pos[0] + d[0], current_pos[1] + d[1])
                     visited.add(next_pos)
-                    # If next cell is free, add it to the coverage path
-                    next_cell = self.area.get_cell(*next_pos)
-                    if next_cell.cell_type == CellType.FREE:
-                        current_cell = self.area.get_cell(*coverage_path[-1])
-                        if current_cell.distance(next_cell) > np.sqrt(2):
-                            next_coverage_pos = (current_pos[0] + last_dir[0], current_pos[1] + last_dir[1])
-                            if self.area.get_cell(*next_coverage_pos).cell_type == CellType.FREE:
-                                coverage_path.append(next_coverage_pos)
-                        coverage_path.append(next_pos)
+                    last_coverage_pos = coverage_path[-1]
+                    if last_coverage_pos == current_pos:
+                        if self.area.get_cell(*next_pos).cell_type == CellType.FREE:
+                            coverage_path.append(next_pos)
+                        else:
+                            symmetric_next_pos = self._symmetric_cell(next_pos, d)
+                            if (
+                                self.area.get_cell(*symmetric_next_pos).cell_type
+                                == CellType.FREE
+                            ):
+                                coverage_path.append(symmetric_next_pos)
                     else:
-                        # Only move if the current cell is the last cell on the coverage path or the current cell is
-                        # symmetric to the last cell on the coverage path.
-                        # If the current cell is equal to the last cell on the coverage path, add the cell symmetric to
-                        # the next cell to the coverage path if it is free. If that cell is occupied, do nothing.
-                        # If the current cell is symmetric to the last cell on the coverage path with respect to
-                        # the movement direction, then move in the same direction from the last cell on the
-                        # coverage path. If the next cell is free, add it to the coverage path, otherwise do nothing.
-                        # If the current cell is symmetric to the last cell on the coverage path in the other direction,
-                        # (orthogonal to the movement direction), then move in the same direction from the last cell on
-                        last_coverage_cell = coverage_path[-1]
-                        if last_coverage_cell == current_pos:
-                            symmetric_next_cell = self._symmetric_cell(next_pos, d)
-                            if (
-                                self.area.get_cell(*symmetric_next_cell).cell_type
-                                == CellType.FREE
-                            ):
-                                coverage_path.append(symmetric_next_cell)
-                        elif self._symmetric_cell(current_pos, d) == last_coverage_cell:
-                            next_coverage_cell = (
-                                last_coverage_cell[0] + d[0],
-                                last_coverage_cell[1] + d[1],
-                            )
-                            if (
-                                self.area.get_cell(*next_coverage_cell).cell_type
-                                == CellType.FREE
-                            ):
-                                coverage_path.append(next_coverage_cell)
-                        elif self._symmetric_cell(current_pos, last_dir) == last_coverage_cell:
-                            """
-                                 1 | 0
-                            1->^ 1 | 0 
-                            -------+--
-                            0 -> 0 |
-                            """
-                            next_coverage_cell = (
-                                last_coverage_cell[0] + last_dir[0] + d[0],
-                                last_coverage_cell[1] + last_dir[1] + d[1],
-                            )
-                            if (
-                                self.area.get_cell(*next_coverage_cell).cell_type
-                                == CellType.FREE
-                            ):
-                                coverage_path.append(next_coverage_cell)
-                                next_next_coverage_cell = (
-                                    next_coverage_cell[0] + d[0],
-                                    next_coverage_cell[1] + d[1],
+                        if last_coverage_pos == self._symmetric_cell(current_pos, d):
+                            if self.area.get_cell(*next_pos).cell_type == CellType.FREE:
+                                coverage_path.append(next_pos)
+                            else:
+                                next_coverage_pos = (
+                                    last_coverage_pos[0] + d[0],
+                                    last_coverage_pos[1] + d[1],
                                 )
                                 if (
-                                    self.area.get_cell(*next_next_coverage_cell).cell_type
+                                    self.area.get_cell(*next_coverage_pos).cell_type
                                     == CellType.FREE
                                 ):
-                                    coverage_path.append(next_next_coverage_cell)
-
+                                    coverage_path.append(next_coverage_pos)
+                        elif last_coverage_pos == self._symmetric_cell(
+                            current_pos, last_dir
+                        ):
+                            if next_pos != last_coverage_pos:
+                                next_coverage_pos = (
+                                    current_pos[0] + last_dir[0],
+                                    current_pos[1] + last_dir[1],
+                                )
+                                if (
+                                    self.area.get_cell(*next_coverage_pos).cell_type
+                                    == CellType.FREE
+                                ):
+                                    coverage_path.append(next_coverage_pos)
+                                if (
+                                    self.area.get_cell(*next_pos).cell_type
+                                    == CellType.FREE
+                                ):
+                                    coverage_path.append(next_pos)
+                                else:
+                                    symmetric_next_pos = self._symmetric_cell(
+                                        next_pos, d
+                                    )
+                                    if (
+                                        self.area.get_cell(
+                                            *symmetric_next_pos
+                                        ).cell_type
+                                        == CellType.FREE
+                                    ):
+                                        coverage_path.append(symmetric_next_pos)
                     current_pos = next_pos
                     last_dir = d
                     stop = False
@@ -242,7 +231,9 @@ class STCPlanner(SingleCoveragePathPlanner):
                         return adj_list
         return adj_list
 
-    def _dfs(self, start_cell: tuple[int, int]) -> dict[tuple[int, int], list[tuple[int, int]]]:
+    def _dfs(
+        self, start_cell: tuple[int, int]
+    ) -> dict[tuple[int, int], list[tuple[int, int]]]:
         """
         Minimum Spanning Tree of Mega Graph using Depth First Search
         :param start_cell: the starting cell
@@ -252,7 +243,9 @@ class STCPlanner(SingleCoveragePathPlanner):
         assert self._mega_cell_type(start_mega_cell) == CellType.FREE
 
         parents: dict[tuple[int, int], tuple[int, int] | None] = {}
-        stack: list[tuple[tuple[int, int], tuple[int, int] | None]] = [(start_mega_cell, None)]
+        stack: list[tuple[tuple[int, int], tuple[int, int] | None]] = [
+            (start_mega_cell, None)
+        ]
         while stack:
             current, parent = stack.pop()
             if current in parents:
@@ -415,6 +408,4 @@ def _deduplicate_path(path: list[tuple[int, int]]) -> list[tuple[int, int]]:
     for i in range(1, len(path)):
         if path[i] != path[i - 1]:
             deduplicated_path.append(path[i])
-            if (path[i][0] - path[i-1][0]) ** 2 + (path[i][1] - path[i-1][1]) ** 2 > 2:
-                print(path[i - 3], path[i - 2], path[i-1], path[i])
     return deduplicated_path

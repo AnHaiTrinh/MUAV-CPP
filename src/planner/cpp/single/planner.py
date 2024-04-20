@@ -25,7 +25,9 @@ class SingleCoveragePathPlannerFactory:
     _registry: dict[str, Type[SingleCoveragePathPlanner]] = {}
 
     @classmethod
-    def get_planner(cls, name: str, area: Map, uav: UAV, **kwargs) -> SingleCoveragePathPlanner:
+    def get_planner(
+        cls, name: str, area: Map, uav: UAV, **kwargs
+    ) -> SingleCoveragePathPlanner:
         planner_cls = cls._registry.get(name, None)
         if planner_cls is None:
             raise ValueError(f"Planner {name} not found")

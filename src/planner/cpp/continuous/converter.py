@@ -33,4 +33,6 @@ class SingleAsContinuousCoveragePathPlanner(ContinuousCoveragePathPlanner):
         raise NotImplementedError("Single planner does not support adding new uav")
 
     def remove_uav_plan(self, uav_name: str):
-        raise NotImplementedError("Single planner does not support removing existing uav")
+        raise NotImplementedError(
+            "Single planner does not support removing existing uav"
+        )

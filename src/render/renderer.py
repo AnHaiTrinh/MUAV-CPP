@@ -62,7 +62,7 @@ class Renderer(ComposableComponent):
         self.dropdown = DropDown(
             pygame.Surface((180, 210)),
             (600, 20),
-            ["Dummy", "Single", "Algo2", "Algo3"],
+            ["Dummy", "Single", "DARP", "Algo3"],
         )
         self.add_component("dropdown", self.dropdown)
 
@@ -168,7 +168,7 @@ class Renderer(ComposableComponent):
             self.remove_component("uav_panel")
 
         uav_panel = UAVPanel(
-            pygame.Surface((180, 500)),
+            pygame.Surface((180, 512)),
             (600, 250),
             self.uavs,
         )

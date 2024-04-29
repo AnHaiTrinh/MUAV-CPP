@@ -13,7 +13,7 @@ class Map:
     @staticmethod
     def create_empty_map(width: int, height: int) -> "Map":
         cells = [
-            [Cell(CellType.FREE, r, c) for r in range(width)] for c in range(height)
+            [Cell(CellType.FREE, r, c) for c in range(width)] for r in range(height)
         ]
         return Map(cells)
 
@@ -44,7 +44,7 @@ class Map:
         self.cells[r][c].assign = uav.name
 
     def __repr__(self):
-        return "\n".join("\t".join(str(cell) for cell in row) for row in self.cells)
+        return "\n".join("\t".join(repr(cell) for cell in row) for row in self.cells)
 
     def __str__(self):
         return "\n".join(

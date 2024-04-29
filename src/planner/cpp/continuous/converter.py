@@ -10,8 +10,8 @@ class SingleAsContinuousCoveragePathPlanner(ContinuousCoveragePathPlanner):
 
     def __init__(self, uavs: list[UAV], _map: Map, **kwargs):
         assert len(uavs) == 1
-        assert "single_planner" in kwargs
-        single_planner_name = kwargs["single_planner"]
+        super().__init__(uavs, _map, **kwargs)
+        single_planner_name = kwargs.get("single_planner", "STC")
         uav = uavs[0]
         for height in range(_map.height):
             for width in range(_map.width):
@@ -24,7 +24,7 @@ class SingleAsContinuousCoveragePathPlanner(ContinuousCoveragePathPlanner):
         self.single_planner = SingleCoveragePathPlannerFactory.get_planner(
             single_planner_name, _map, uav, **kwargs
         )
-        super().__init__(uavs, _map, **kwargs)
+        self.init_plan()
 
     def init_plan(self):
         self.single_planner.plan()

@@ -11,7 +11,6 @@ class ContinuousCoveragePathPlanner(ABC):
     def __init__(self, uavs: list[UAV], _map: Map, **kwargs):
         self.uavs = uavs
         self.map = _map
-        self.init_plan()
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)

@@ -68,7 +68,7 @@ class UAVPanel(ComposableComponent):
         surface: pygame.Surface,
         translation: tuple[int, int],
         uavs: list[UAV],
-        section_height: int = 60,
+        section_height: int = 45,
         section_border: int = 2,
         background_color: colors.Color = colors.WHITE,
     ):

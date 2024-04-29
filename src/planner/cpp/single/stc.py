@@ -25,16 +25,6 @@ class STCPlanner(SingleCoveragePathPlanner):
             cells.append(row)
         self.area = Map(cells)
         self.dirs = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-        self.move_dirs = [
-            (0, 1),
-            (1, 0),
-            (0, -1),
-            (-1, 0),
-            (1, 1),
-            (1, -1),
-            (-1, 1),
-            (-1, -1),
-        ]
 
     @staticmethod
     def _cell_to_mega_cell(cell: tuple[int, int]) -> tuple[int, int]:

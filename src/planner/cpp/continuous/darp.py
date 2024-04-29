@@ -25,7 +25,7 @@ class DARP(ContinuousCoveragePathPlanner):
 
     def __init__(self, uavs: list[UAV], _map: Map, **kwargs):
         super().__init__(uavs, _map, **kwargs)
-        self.no_uavs = len(self.uavs)
+        self.num_uavs = len(self.uavs)
 
         self.obstacles_rows = []
         self.obstacles_cols = []
@@ -57,22 +57,22 @@ class DARP(ContinuousCoveragePathPlanner):
             dtype=np.float64,
         )
 
-        self.connected = np.full(self.no_uavs, True, dtype=bool)
+        self.connected = np.full(self.num_uavs, True, dtype=bool)
 
         self.free_cell_count = len(free_cells)
-        self.thresh = 0 if len(free_cells) % self.no_uavs == 0 else 1
+        self.thresh = 0 if len(free_cells) % self.num_uavs == 0 else 1
 
-        self.max_iter = kwargs.get("max_iter", 1000)
+        self.max_iter = kwargs.get("max_iter", 100 * 2 ** self.num_uavs)
         self.single_planner_name = kwargs.get("single_planner_name", "STC")
         self.init_plan()
 
     def init_plan(self) -> None:
         while self.max_iter:
-            down_thresh = (self.free_cell_count - self.thresh * (self.no_uavs - 1)) / (
-                self.no_uavs * self.free_cell_count
+            down_thresh = (self.free_cell_count - self.thresh * (self.num_uavs - 1)) / (
+                    self.num_uavs * self.free_cell_count
             )
             up_thresh = (self.free_cell_count + self.thresh) / (
-                self.no_uavs * self.free_cell_count
+                    self.num_uavs * self.free_cell_count
             )
 
             success = False
@@ -84,21 +84,21 @@ class DARP(ContinuousCoveragePathPlanner):
                 connected_multiplier = np.stack(
                     [
                         self.get_connected_multiplier(assignment_matrix, i)
-                        for i in range(self.no_uavs)
+                        for i in range(self.num_uavs)
                     ]
                 )
 
                 if np.all(self.connected) and np.all(
-                    np.abs(area_counts - self.free_cell_count // self.no_uavs)
+                    np.abs(area_counts - self.free_cell_count // self.num_uavs)
                     <= self.thresh
                 ):
                     success = True
                     print("Success")
                     break
 
-                div_fair_errors = np.zeros(self.no_uavs, dtype=np.float64)
+                div_fair_errors = np.zeros(self.num_uavs, dtype=np.float64)
                 plain_errors = area_counts.astype(np.float64) / self.free_cell_count
-                for i in range(self.no_uavs):
+                for i in range(self.num_uavs):
                     if plain_errors[i] < down_thresh:
                         div_fair_errors[i] = down_thresh - plain_errors[i]
                     elif plain_errors[i] > up_thresh:
@@ -107,8 +107,8 @@ class DARP(ContinuousCoveragePathPlanner):
                 total_neg_perc = -np.sum(div_fair_errors[div_fair_errors < 0])
                 total_neg_plain_errors = np.sum(plain_errors[div_fair_errors < 0])
 
-                correction_multiplier = np.ones(self.no_uavs, dtype=np.float64)
-                for i in range(self.no_uavs):
+                correction_multiplier = np.ones(self.num_uavs, dtype=np.float64)
+                for i in range(self.num_uavs):
                     if div_fair_errors[i] < 0:
                         if total_neg_plain_errors != 0:
                             if div_fair_errors[i] < 0:
@@ -150,12 +150,12 @@ class DARP(ContinuousCoveragePathPlanner):
 
     def assign(self) -> tuple[np.ndarray, np.ndarray]:
         assignment_mat = np.argmin(self.cost_matrix, axis=0)
-        assignment_mat[self.obstacles_rows, self.obstacles_cols] = self.no_uavs
+        assignment_mat[self.obstacles_rows, self.obstacles_cols] = self.num_uavs
 
         values, counts = np.unique(assignment_mat, return_counts=True)
-        area_counts = np.zeros(self.no_uavs, dtype=np.int16)
+        area_counts = np.zeros(self.num_uavs, dtype=np.int16)
         for value, count in zip(values, counts):
-            if value < self.no_uavs:
+            if value < self.num_uavs:
                 area_counts[value] = count
 
         return assignment_mat, area_counts

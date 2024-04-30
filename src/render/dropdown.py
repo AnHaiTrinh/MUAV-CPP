@@ -1,6 +1,6 @@
 import pygame
 
-from src.render import colors
+from src.core import colors
 from src.render.base import Component
 
 

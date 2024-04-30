@@ -319,17 +319,24 @@ class STCPlanner(SingleCoveragePathPlanner):
                 continue
             nxt = (nxt_r, nxt_c)
             contacting_cells = get_contacting_cells(mega_cell, (dr, dc))
-            nxt_contacting_cells = get_contacting_cells(nxt, (-dr, -dc))
+            nxt_contacting_cells = (
+                self.area.get_cell(
+                    contacting_cells[0].r + dr, contacting_cells[0].c + dc
+                ),
+                self.area.get_cell(
+                    contacting_cells[1].r + dr, contacting_cells[1].c + dc
+                ),
+            )
             if any(
-                cell.cell_type == CellType.FREE for cell in contacting_cells
-            ) and any(cell.cell_type == CellType.FREE for cell in nxt_contacting_cells):
+                cell1.cell_type == CellType.FREE and cell2.cell_type == CellType.FREE
+                for cell1, cell2 in zip(contacting_cells, nxt_contacting_cells)
+            ):
                 secondary_neighbors.append(nxt)
             if all(
                 cell.cell_type == CellType.FREE
                 for cell in contacting_cells + nxt_contacting_cells
             ):
                 neighbors.append(nxt)
-
         if not secondary_neighbors:
             raise ValueError("Graph is disconnected")
         return neighbors, secondary_neighbors

@@ -31,9 +31,6 @@ class Map:
     def get_cell(self, r: int, c: int) -> Cell:
         return self.cells[r][c]
 
-    def set_cell(self, r: int, c: int, cell_type: CellType) -> None:
-        self.cells[r][c].cell_type = cell_type
-
     def to_numpy(self) -> np.ndarray:
         return np.array(
             [[cell.cell_type.value for cell in row] for row in self.cells],

@@ -1,7 +1,7 @@
 from numpy.random import choice
 
 from src.core.cell import Cell
-from src.render.colors import ColorManager
+from src.core.colors import ColorManager
 
 
 class UAV:

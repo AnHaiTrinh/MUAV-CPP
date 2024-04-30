@@ -10,11 +10,11 @@ from src.planner.cpp.continuous.planner import (
     ContinuousCoveragePathPlannerFactory,
 )
 from src.render.base import BorderedComponent, ComposableComponent
-from src.render.colors import ColorManager
+from src.core.colors import ColorManager
 from src.render.events import UAV_COUNT_CHANGE_EVENT
 from src.render.panel import UAVPanel
 from src.render.state import StateEnum
-from src.render import colors
+from src.core import colors
 from src.render.buttons import ButtonTray, AnnotatedComponent, Button
 from src.render.dropdown import DropDown
 from src.render.map_component import MapComponent

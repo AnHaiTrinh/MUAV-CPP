@@ -4,7 +4,7 @@ from src.core.cell import CellType
 from src.core.map import Map
 from src.core.uav import UAV
 from src.core.utils import resize_map
-from src.render import colors
+from src.core import colors
 from src.render.base import Component
 
 
@@ -40,9 +40,9 @@ class MapComponent(Component):
             cell_y = mouse_pos_y // self.cell_height
             cell_type = self._map.get_cell(cell_y, cell_x).cell_type
             if cell_type == CellType.FREE:
-                self._map.set_cell(cell_y, cell_x, CellType.OCCUPIED)
+                self._map.get_cell(cell_y, cell_x).cell_type = CellType.OCCUPIED
             elif cell_type == CellType.OCCUPIED:
-                self._map.set_cell(cell_y, cell_x, CellType.FREE)
+                self._map.get_cell(cell_y, cell_x).cell_type = CellType.FREE
 
     def set_map(self, _map: Map) -> None:
         self._map = resize_map(

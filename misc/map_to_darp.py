@@ -32,7 +32,12 @@ def convert_to_darp(_map: Map, uavs: list[UAV]) -> None:
     obs_pos = [str(_map.width * obs[0] + obs[1]) for obs in obs_cells]
     in_pos = [str(_map.width * uav.r + uav.c) for uav in uavs]  # type: ignore
 
-    formatted_cmd = cmd.format(width=_map.width, height=_map.height, obs_pos=" ".join(obs_pos), in_pos=" ".join(in_pos))
+    formatted_cmd = cmd.format(
+        width=_map.width,
+        height=_map.height,
+        obs_pos=" ".join(obs_pos),
+        in_pos=" ".join(in_pos),
+    )
     print(formatted_cmd)
     print(f"Measure-Command {{ {formatted_cmd} }}")
 

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 
-from src.render import colors
+from src.core import colors
 import pygame
 
 

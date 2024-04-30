@@ -2,6 +2,7 @@
 An implementation of DARP (Divide Areas Algorithm for Optimal Multi-Robot Coverage Path Planning)
 Reference: https://github.com/alice-st/DARP
 """
+
 import random
 import numpy as np
 import cv2
@@ -62,17 +63,17 @@ class DARP(ContinuousCoveragePathPlanner):
         self.free_cell_count = len(free_cells)
         self.thresh = 0 if len(free_cells) % self.num_uavs == 0 else 1
 
-        self.max_iter = kwargs.get("max_iter", 100 * 2 ** self.num_uavs)
+        self.max_iter = kwargs.get("max_iter", 100 * 2**self.num_uavs)
         self.single_planner_name = kwargs.get("single_planner_name", "STC")
         self.init_plan()
 
     def init_plan(self) -> None:
         while self.max_iter:
             down_thresh = (self.free_cell_count - self.thresh * (self.num_uavs - 1)) / (
-                    self.num_uavs * self.free_cell_count
+                self.num_uavs * self.free_cell_count
             )
             up_thresh = (self.free_cell_count + self.thresh) / (
-                    self.num_uavs * self.free_cell_count
+                self.num_uavs * self.free_cell_count
             )
 
             success = False

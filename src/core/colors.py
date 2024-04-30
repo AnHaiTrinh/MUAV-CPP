@@ -42,7 +42,8 @@ class ColorManager:
             color = cls.colors.pop()
             return color
         except IndexError:
-            raise ValueError("No more colors available")
+            print("No more colors available")
+            return BLACK
 
     @classmethod
     def release_color(cls, color: Color) -> None:

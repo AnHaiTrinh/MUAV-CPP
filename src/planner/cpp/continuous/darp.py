@@ -3,7 +3,6 @@ An implementation of DARP (Divide Areas Algorithm for Optimal Multi-Robot Covera
 Reference: https://github.com/alice-st/DARP
 """
 
-import random
 import numpy as np
 import cv2
 
@@ -13,7 +12,6 @@ from src.core.uav import UAV
 from src.planner.cpp.continuous.planner import ContinuousCoveragePathPlanner
 from src.planner.cpp.single.planner import SingleCoveragePathPlannerFactory
 
-random.seed(42069)
 np.random.seed(42069)
 _EPSILON = 1e-6
 _CC_VARIATION = 0.01
@@ -26,29 +24,14 @@ class DARP(ContinuousCoveragePathPlanner):
 
     def __init__(self, uavs: list[UAV], _map: Map, **kwargs):
         super().__init__(uavs, _map, **kwargs)
-        self.num_uavs = len(self.uavs)
 
         self.obstacles_rows = []
         self.obstacles_cols = []
-        free_cells = []
-        used_cells = set()
         for row in _map.cells:
             for cell in row:
-                if cell.cell_type == CellType.FREE:
-                    free_cells.append((cell.r, cell.c))
-                else:
+                if cell.cell_type == CellType.OCCUPIED:
                     self.obstacles_rows.append(cell.r)
                     self.obstacles_cols.append(cell.c)
-
-        for uav in uavs:
-            while uav.r is None or uav.c is None:
-                free_cell = random.choice(free_cells)
-                if free_cell in used_cells:
-                    continue
-                used_cells.add(free_cell)
-                uav.r = free_cell[0]
-                uav.c = free_cell[1]
-                print(f"{uav.name} starts at {(uav.r, uav.c)}")
 
         self.cost_matrix = np.stack(
             [
@@ -60,8 +43,7 @@ class DARP(ContinuousCoveragePathPlanner):
 
         self.connected = np.full(self.num_uavs, True, dtype=bool)
 
-        self.free_cell_count = len(free_cells)
-        self.thresh = 0 if len(free_cells) % self.num_uavs == 0 else 1
+        self.thresh = 0 if self.free_cell_count % self.num_uavs == 0 else 1
 
         self.max_iter = kwargs.get("max_iter", 100 * 2**self.num_uavs)
         self.single_planner_name = kwargs.get("single_planner_name", "STC")

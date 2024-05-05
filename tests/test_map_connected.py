@@ -10,10 +10,7 @@ for img in os.listdir(images_root):
     try:
         test_map = load_map_from_file(os.path.join(images_root, img))
         planner = ContinuousCoveragePathPlannerFactory.get_planner(
-            "Single",
-            [UAV()],
-            test_map,
-            single_planner="STC"
+            "Single", [UAV()], test_map, single_planner="STC"
         )
     except ValueError as err:
         print(f"Failed to load {img}: {err.args[0]}")

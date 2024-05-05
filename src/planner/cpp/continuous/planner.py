@@ -15,7 +15,6 @@ class ContinuousCoveragePathPlanner(ABC):
     def __init__(self, uavs: list[UAV], _map: Map, **kwargs):
         self.num_uavs = len(uavs)
         free_cells = []
-        used_cells = set()
         for row in _map.cells:
             for cell in row:
                 if cell.cell_type == CellType.FREE:
@@ -25,14 +24,11 @@ class ContinuousCoveragePathPlanner(ABC):
         self.target_cell_count = self.free_cell_count // self.num_uavs
 
         for uav in uavs:
-            while uav.r is None or uav.c is None:
-                free_cell = random.choice(free_cells)
-                if free_cell in used_cells:
-                    continue
-                used_cells.add(free_cell)
-                uav.r = free_cell[0]
-                uav.c = free_cell[1]
-                print(f"{uav.name} starts at {(uav.r, uav.c)}")
+            free_cell = random.choice(free_cells)
+            uav.r = free_cell[0]
+            uav.c = free_cell[1]
+            print(f"{uav.name} starts at {(uav.r, uav.c)}")
+            free_cells.remove(free_cell)
 
         self.uavs = uavs
         self.map = _map

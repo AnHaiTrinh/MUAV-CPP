@@ -62,7 +62,8 @@ class UAV:
                 break
         if not found:
             raise ValueError(
-                f"Initial position ({self.r}, {self.c}) not found in trajectory {[(cell.r, cell.c) for cell in self.trajectory]}"
+                f"Initial position ({self.r}, {self.c}) not found in trajectory "
+                f"{[(cell.r, cell.c) for cell in self.trajectory]}"
             )
 
     def reset(self):

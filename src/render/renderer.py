@@ -62,7 +62,7 @@ class Renderer(ComposableComponent):
         self.dropdown = DropDown(
             pygame.Surface((180, 210)),
             (600, 20),
-            ["Dummy", "Single", "DARP", "Algo3"],
+            ContinuousCoveragePathPlannerFactory.get_planner_names(),
         )
         self.add_component("dropdown", self.dropdown)
 

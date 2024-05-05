@@ -63,5 +63,9 @@ class ContinuousCoveragePathPlannerFactory:
         return planner_cls(uavs, _map, **kwargs)
 
     @classmethod
-    def register(cls, name: str, planner: Type[ContinuousCoveragePathPlanner]):
+    def register(cls, name: str, planner: Type[ContinuousCoveragePathPlanner]) -> None:
         cls._registry[name] = planner
+
+    @classmethod
+    def get_planner_names(cls) -> list[str]:
+        return list(cls._registry.keys())

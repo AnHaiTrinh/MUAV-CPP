@@ -62,7 +62,7 @@ class DARP(ContinuousCoveragePathPlanner):
             iteration = 0
 
             while iteration < self.max_iter:
-                print(f"Iteration: {iteration + 1}/{self.max_iter}")
+                # print(f"Iteration: {iteration + 1}/{self.max_iter}")
                 assignment_matrix, area_counts = self.assign()
                 connected_multiplier = np.stack(
                     [
@@ -76,7 +76,7 @@ class DARP(ContinuousCoveragePathPlanner):
                     <= self.thresh
                 ):
                     success = True
-                    print("Success")
+                    # print("Success")
                     break
 
                 div_fair_errors = np.zeros(self.num_uavs, dtype=np.float64)
@@ -118,8 +118,8 @@ class DARP(ContinuousCoveragePathPlanner):
             self.thresh += 1
 
         assignment_matrix, area_counts = self.assign()
-        print(assignment_matrix)
-        print(f"Final assignment: {area_counts}")
+        # print(assignment_matrix)
+        # print(f"Final assignment: {area_counts}")
 
         for i, uav in enumerate(self.uavs):
             row_idx, col_idx = np.where(assignment_matrix == i)

@@ -17,10 +17,7 @@ class SingleAsContinuousCoveragePathPlanner(ContinuousCoveragePathPlanner):
             for width in range(_map.width):
                 if _map.get_cell(height, width).cell_type == CellType.FREE:
                     _map.assign(height, width, uav)
-                    if uav.r is None:
-                        uav.r = height
-                    if uav.c is None:
-                        uav.c = width
+
         self.single_planner = SingleCoveragePathPlannerFactory.get_planner(
             single_planner_name, _map, uav, **kwargs
         )

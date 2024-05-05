@@ -9,6 +9,8 @@ class DummyContinuousCoveragePathPlanner(ContinuousCoveragePathPlanner):
 
     def __init__(self, uavs: list[UAV], _map: Map, **kwargs):
         super().__init__(uavs, _map, **kwargs)
+        for i, uav in enumerate(self.uavs):
+            uav.r = uav.c = i * 20
         self.init_plan()
 
     def init_plan(self) -> None:

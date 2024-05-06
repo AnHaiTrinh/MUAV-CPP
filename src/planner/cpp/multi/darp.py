@@ -9,8 +9,8 @@ import cv2
 from src.core.cell import CellType
 from src.core.map import Map
 from src.core.uav import UAV
-from src.planner.cpp.continuous.planner import ContinuousCoveragePathPlanner
-from src.planner.cpp.single.planner import SingleCoveragePathPlannerFactory
+from src.planner.cpp.multi.single import MultiAsSingleCoveragePathPlanner
+from src.planner.cpp.utils import get_assign_count
 
 np.random.seed(42069)
 _EPSILON = 1e-6
@@ -19,7 +19,7 @@ _RANDOM_LEVEL = 1e-4
 _DIRS = ((0, 1), (0, -1), (1, 0), (-1, 0))
 
 
-class DARP(ContinuousCoveragePathPlanner):
+class DARP(MultiAsSingleCoveragePathPlanner):
     name = "DARP"
 
     def __init__(self, uavs: list[UAV], _map: Map, **kwargs):
@@ -47,9 +47,8 @@ class DARP(ContinuousCoveragePathPlanner):
 
         self.max_iter = kwargs.get("max_iter", 100 * 2**self.num_uavs)
         self.single_planner_name = kwargs.get("single_planner_name", "STC")
-        self.init_plan()
 
-    def init_plan(self) -> None:
+    def assign(self) -> np.ndarray:
         while self.max_iter:
             down_thresh = (self.free_cell_count - self.thresh * (self.num_uavs - 1)) / (
                 self.num_uavs * self.free_cell_count
@@ -63,7 +62,9 @@ class DARP(ContinuousCoveragePathPlanner):
 
             while iteration < self.max_iter:
                 # print(f"Iteration: {iteration + 1}/{self.max_iter}")
-                assignment_matrix, area_counts = self.assign()
+                assignment_matrix = self.get_assignment()
+                area_counts = get_assign_count(assignment_matrix, self.num_uavs)
+
                 connected_multiplier = np.stack(
                     [
                         self.get_connected_multiplier(assignment_matrix, i)
@@ -117,31 +118,13 @@ class DARP(ContinuousCoveragePathPlanner):
             self.max_iter >>= 1
             self.thresh += 1
 
-        assignment_matrix, area_counts = self.assign()
-        # print(assignment_matrix)
-        # print(f"Final assignment: {area_counts}")
+        return self.get_assignment()
 
-        for i, uav in enumerate(self.uavs):
-            row_idx, col_idx = np.where(assignment_matrix == i)
-            for r, c in zip(row_idx, col_idx):
-                self.map.assign(r, c, uav)
-
-            planner = SingleCoveragePathPlannerFactory.get_planner(
-                self.single_planner_name, self.map, uav
-            )
-            planner.plan()
-
-    def assign(self) -> tuple[np.ndarray, np.ndarray]:
+    def get_assignment(self) -> np.ndarray:
         assignment_mat = np.argmin(self.cost_matrix, axis=0)
-        assignment_mat[self.obstacles_rows, self.obstacles_cols] = self.num_uavs
+        assignment_mat[self.obstacles_rows, self.obstacles_cols] = -1
 
-        values, counts = np.unique(assignment_mat, return_counts=True)
-        area_counts = np.zeros(self.num_uavs, dtype=np.int16)
-        for value, count in zip(values, counts):
-            if value < self.num_uavs:
-                area_counts[value] = count
-
-        return assignment_mat, area_counts
+        return assignment_mat
 
     def get_connected_multiplier(
         self, assignment_matrix: np.ndarray, uav_index: int
@@ -166,12 +149,6 @@ class DARP(ContinuousCoveragePathPlanner):
         dist2 = _normalized_euclidean_distance(other_components, False)
         connected_multiplier = (dist1 - dist2).astype(np.float64)
         return (_normalize_matrix(connected_multiplier) * 2 - 1) * _CC_VARIATION + 1
-
-    def new_uav_plan(self, uav_name: str) -> None:
-        raise NotImplementedError("DARP planner does not support adding new uav")
-
-    def remove_uav_plan(self, uav_name: str) -> None:
-        raise NotImplementedError("DARP planner does not support removing existing uav")
 
 
 def _euclidean_distance(start: tuple[int, int], shape: tuple[int, int]) -> np.ndarray:
@@ -214,8 +191,9 @@ def _random_matrix(shape: tuple[int, ...]) -> np.ndarray:
 if __name__ == "__main__":
     from src.core.utils import load_map_from_file
 
-    my_map = load_map_from_file("../../../../images_filled/Denver_0.png")
+    my_map = load_map_from_file("../../../../images_filled/London_2.png")
 
     my_uavs = [UAV(name=f"UAV{i + 1}") for i in range(5)]
 
     darp = DARP(my_uavs, my_map)
+    darp.plan()

@@ -5,10 +5,8 @@ import pygame
 from src.core.map import Map
 from src.core.uav import UAV
 from src.core.utils import load_map_from_file, save_map_to_file
-from src.planner.cpp.continuous.planner import (
-    ContinuousCoveragePathPlanner,
-    ContinuousCoveragePathPlannerFactory,
-)
+from src.planner.cpp.multi.planner import MultiCoveragePathPlannerFactory
+from src.planner.cpp.continuous.planner import ContinuousCoveragePathPlanner
 from src.render.base import BorderedComponent, ComposableComponent
 from src.core.colors import ColorManager
 from src.render.events import UAV_COUNT_CHANGE_EVENT
@@ -62,7 +60,7 @@ class Renderer(ComposableComponent):
         self.dropdown = DropDown(
             pygame.Surface((180, 210)),
             (600, 20),
-            ContinuousCoveragePathPlannerFactory.get_planner_names(),
+            MultiCoveragePathPlannerFactory.get_planner_names(),
         )
         self.add_component("dropdown", self.dropdown)
 
@@ -192,19 +190,19 @@ class Renderer(ComposableComponent):
                     raise ValueError("Planner not initialized")
 
             if event.action == "add":
-                self.planner.new_uav_plan(event.uav_name)
+                self.planner.handle_new_uav(event.uav_name)
             elif event.action == "remove":
-                self.planner.remove_uav_plan(event.uav_name)
+                self.planner.handle_removed_uav(event.uav_name)
             self._create_uav_panel()
 
     def _handle_run(self):
         if not self.planner:
-            self.planner = ContinuousCoveragePathPlannerFactory.get_planner(
-                self.dropdown.get_selected(),
+            self.planner = ContinuousCoveragePathPlanner(
                 self.uavs,
                 self.map_component.get_map(),
-                single_planner="STC",
+                multi_planner=self.dropdown.get_selected(),
             )
+            self.planner.plan()
 
         if not self.map_component.uavs:
             self.map_component.set_uavs(self.uavs)

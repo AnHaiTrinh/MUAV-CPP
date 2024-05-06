@@ -2,7 +2,7 @@ import os
 
 from src.core.utils import load_map_from_file
 from src.core.uav import UAV
-from src.planner.cpp.continuous.planner import ContinuousCoveragePathPlannerFactory
+from src.planner.cpp.multi.planner import ContinuousCoveragePathPlannerFactory
 
 _base_dir = os.path.dirname(__file__)
 images_root = os.path.join(_base_dir, "..", "images_filled")

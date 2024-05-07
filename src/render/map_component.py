@@ -101,10 +101,10 @@ class MapComponent(Component):
 
             pygame.draw.circle(
                 self.surface,
-                uav.color,
+                colors.RED,
                 (
                     int((uav.c + 0.5) * self.cell_width),
                     int((uav.r + 0.5) * self.cell_height),
                 ),
-                min(self.cell_width, self.cell_height) // 2,
+                min(self.cell_width, self.cell_height)
             )

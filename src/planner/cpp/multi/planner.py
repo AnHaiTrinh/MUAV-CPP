@@ -2,7 +2,6 @@ from abc import abstractmethod, ABC
 import random
 from typing import Type
 
-from src.core.cell import CellType
 from src.core.map import Map
 from src.core.uav import UAV
 
@@ -14,21 +13,21 @@ class MultiCoveragePathPlanner(ABC):
 
     def __init__(self, uavs: list[UAV], _map: Map, **kwargs):
         self.num_uavs = len(uavs)
-        free_cells = []
-        for row in _map.cells:
-            for cell in row:
-                if cell.cell_type == CellType.FREE:
-                    free_cells.append((cell.r, cell.c))
 
-        self.free_cell_count = len(free_cells)
+        self.free_cell_count = len(_map.free_cells)
         self.target_cell_count = self.free_cell_count // self.num_uavs
+        used_cells = set()
 
         for uav in uavs:
-            free_cell = random.choice(free_cells)
-            uav.r = free_cell[0]
-            uav.c = free_cell[1]
-            print(f"{uav.name} starts at {(uav.r, uav.c)}")
-            free_cells.remove(free_cell)
+            while True:
+                free_cell = random.choice(_map.free_cells)
+                if (free_cell.r, free_cell.c) in used_cells:
+                    continue
+                uav.r = free_cell.r
+                uav.c = free_cell.c
+                used_cells.add((uav.r, uav.c))
+                print(f"{uav.name} starts at {(uav.r, uav.c)}")
+                break
 
         self.uavs = uavs
         self.map = _map

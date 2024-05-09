@@ -6,7 +6,6 @@ Reference: https://github.com/alice-st/DARP
 import numpy as np
 import cv2
 
-from src.core.cell import CellType
 from src.core.map import Map
 from src.core.uav import UAV
 from src.planner.cpp.multi.single import MultiAsSingleCoveragePathPlanner
@@ -25,13 +24,8 @@ class DARP(MultiAsSingleCoveragePathPlanner):
     def __init__(self, uavs: list[UAV], _map: Map, **kwargs):
         super().__init__(uavs, _map, **kwargs)
 
-        self.obstacles_rows = []
-        self.obstacles_cols = []
-        for row in _map.cells:
-            for cell in row:
-                if cell.cell_type == CellType.OCCUPIED:
-                    self.obstacles_rows.append(cell.r)
-                    self.obstacles_cols.append(cell.c)
+        occupied_cells = _map.occupied_cells
+        self.occupied_indices = np.array([(cell.r, cell.c) for cell in occupied_cells]).T
 
         self.cost_matrix = np.stack(
             [
@@ -122,7 +116,7 @@ class DARP(MultiAsSingleCoveragePathPlanner):
 
     def get_assignment(self) -> np.ndarray:
         assignment_mat = np.argmin(self.cost_matrix, axis=0)
-        assignment_mat[self.obstacles_rows, self.obstacles_cols] = -1
+        assignment_mat[*self.occupied_indices] = -1
 
         return assignment_mat
 

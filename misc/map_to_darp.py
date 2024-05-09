@@ -9,15 +9,9 @@ cmd = "python multiRobotPathPlanner.py -grid {width} {height} -obs_pos {obs_pos}
 
 
 def convert_to_darp(_map: Map, uavs: list[UAV]) -> None:
-    free_cells = []
-    obs_cells = []
+    free_cells = _map.free_cells
+    obs_cells = _map.occupied_cells
     used_cells = set()
-    for row in _map.cells:
-        for cell in row:
-            if cell.cell_type == CellType.FREE:
-                free_cells.append((cell.r, cell.c))
-            else:
-                obs_cells.append((cell.r, cell.c))
 
     for uav in uavs:
         while uav.r is None or uav.c is None:

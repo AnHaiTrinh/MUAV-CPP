@@ -1,3 +1,5 @@
+from functools import cached_property
+
 import numpy as np
 
 from src.core.cell import Cell, CellType
@@ -39,6 +41,14 @@ class Map:
 
     def assign(self, r: int, c: int, uav: UAV) -> None:
         self.cells[r][c].assign = uav.name
+
+    @cached_property
+    def free_cells(self) -> list[Cell]:
+        return [cell for row in self.cells for cell in row if cell.cell_type == CellType.FREE]
+
+    @cached_property
+    def occupied_cells(self) -> list[Cell]:
+        return [cell for row in self.cells for cell in row if cell.cell_type == CellType.OCCUPIED]
 
     def __repr__(self):
         return "\n".join("\t".join(repr(cell) for cell in row) for row in self.cells)

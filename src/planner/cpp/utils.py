@@ -1,3 +1,4 @@
+import random
 from collections import defaultdict, deque
 
 import numpy as np
@@ -5,6 +6,7 @@ import numpy as np
 from src.core.map import Map
 from src.core.uav import UAV
 
+random.seed(42069)
 _DIRS = ((-1, 0), (0, -1), (0, 1), (1, 0))
 
 
@@ -195,3 +197,15 @@ def dfs_subtree(mat: np.ndarray, root: tuple[int, int]) -> list[set[tuple[int, i
                 stack.append(((_nr, _nc), subtree))
 
     return [subtree for subtree in subtrees if subtree]
+
+
+def map_to_assignment_matrix(_map: Map, uavs: list[UAV]) -> np.ndarray:
+    assigned = -1 * _map.to_numpy()
+    uav_names = {uav.name: i for i, uav in enumerate(uavs)}
+    for r in range(_map.height):
+        for c in range(_map.width):
+            if assigned[r, c] < 0:
+                continue
+            label = _map.get_cell(r, c).assign
+            assigned[r, c] = uav_names[label]
+    return assigned

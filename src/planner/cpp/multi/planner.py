@@ -14,20 +14,9 @@ class MultiCoveragePathPlanner(ABC):
     def __init__(self, uavs: list[UAV], _map: Map, **kwargs):
         self.num_uavs = len(uavs)
 
+        self.free_cells = _map.free_cells
         self.free_cell_count = len(_map.free_cells)
         self.target_cell_count = self.free_cell_count // self.num_uavs
-        used_cells = set()
-
-        for uav in uavs:
-            while True:
-                free_cell = random.choice(_map.free_cells)
-                if (free_cell.r, free_cell.c) in used_cells:
-                    continue
-                uav.r = free_cell.r
-                uav.c = free_cell.c
-                used_cells.add((uav.r, uav.c))
-                print(f"{uav.name} starts at {(uav.r, uav.c)}")
-                break
 
         self.uavs = uavs
         self.map = _map

@@ -216,7 +216,10 @@ class STCPlanner(SingleCoveragePathPlanner):
                     adj_list[secondary_neighbor].append(mega_cell)
                     if uf.n_components == 1:
                         return adj_list
-        return adj_list
+
+        if uf.n_components == 1:
+            return adj_list
+        raise ValueError("Graph is disconnected")
 
     def _dfs(
         self, start_cell: tuple[int, int]
@@ -337,8 +340,6 @@ class STCPlanner(SingleCoveragePathPlanner):
                 for cell in contacting_cells + nxt_contacting_cells
             ):
                 neighbors.append(nxt)
-        if not secondary_neighbors:
-            raise ValueError("Graph is disconnected")
         return neighbors, secondary_neighbors
 
     def _mega_cell_type(self, mega_cell: tuple[int, int]) -> CellType:

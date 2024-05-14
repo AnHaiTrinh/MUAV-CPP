@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from src.core.cell import CellType
 from src.core.map import Map
 from src.core.uav import UAV
 from src.planner.cpp.multi.planner import MultiCoveragePathPlanner
@@ -10,6 +9,10 @@ from src.planner.cpp.single.planner import SingleCoveragePathPlannerFactory
 
 
 class MultiAsSingleCoveragePathPlanner(MultiCoveragePathPlanner, ABC):
+    """
+    This class converts the multi-coverage problem into a single-coverage problem by assigning each UAV to a cell.
+    Then the single-coverage planner is used to plan the path for each UAV
+    """
     name = "Single"
 
     def __init__(self, uavs: list[UAV], _map: Map, **kwargs):
@@ -32,6 +35,7 @@ class MultiAsSingleCoveragePathPlanner(MultiCoveragePathPlanner, ABC):
             for r, c in zip(row_idx, col_idx):
                 self.map.assign(r, c, uav)
 
+        for uav in self.uavs:
             single_planner = SingleCoveragePathPlannerFactory.get_planner(
                 self.single_planner_name,
                 self.map,

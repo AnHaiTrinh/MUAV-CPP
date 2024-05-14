@@ -5,7 +5,7 @@ import numpy as np
 from src.core.map import Map
 from src.core.uav import UAV
 from src.planner.cpp.multi.single import MultiAsSingleCoveragePathPlanner
-from src.planner.cpp.utils import get_assign_count, construct_adj_list, is_bridge
+from src.planner.cpp.utils import get_assign_count, construct_adj_list, transfer_area
 
 _DIRS = ((-1, 0), (0, -1), (0, 1), (1, 0))
 
@@ -21,7 +21,6 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
         self.max_iter = kwargs.get("max_iter", 100)
 
     def assign(self) -> np.ndarray:
-        row, col = self.assigned.shape
         equal = False
         iteration = 0
         while (not equal) and iteration < self.max_iter:
@@ -41,27 +40,16 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
                         continue
 
                     to_transfer = (diff + 1) // 2
-                    init_pos = (self.uavs[target_node].r, self.uavs[target_node].c)
-                    queue = deque(adj_list[target_node][node])
-                    while queue and to_transfer > 0:
-                        r, c = queue.popleft()
-                        if self.assigned[r, c] == target_node and is_bridge(
-                            self.assigned, (r, c)
-                        ):
-                            if (r, c) == init_pos:
-                                continue
-                            self.assigned[r, c] = node
-                            to_transfer -= 1
-                            for _dr, _dc in _DIRS:
-                                _nr, _nc = r + _dr, c + _dc
-                                if (
-                                    0 <= _nr < row
-                                    and 0 <= _nc < col
-                                    and self.assigned[_nr, _nc] == target_node
-                                ):
-                                    queue.append((_nr, _nc))
-
-                    if to_transfer == (diff + 1) // 2:
+                    init_pos = (self.uavs[target_node].r, self.uavs[target_node].c)  # type: ignore
+                    success = transfer_area(
+                        target_node,
+                        node,
+                        adj_list[target_node][node],
+                        to_transfer,
+                        self.assigned,
+                        init_pos,  # type: ignore
+                    )
+                    if not success:
                         continue
 
                     equal = False
@@ -77,7 +65,7 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
     def _initial_assign(self) -> np.ndarray:
         """Assign using BFS with sources at each UAV's initial position."""
         q: deque[tuple[tuple[int, int], int]] = deque(
-            ((uav.r, uav.c), i + 1) for i, uav in enumerate(self.uavs)
+            ((uav.r, uav.c), i + 1) for i, uav in enumerate(self.uavs)  # type: ignore
         )  # type: ignore
         assigned = -1 * self.map.to_numpy()
         row, col = assigned.shape

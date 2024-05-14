@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, deque
 
 import numpy as np
 
@@ -49,7 +49,7 @@ def construct_adj_list(
     return adj_list
 
 
-def is_bridge(assigned: np.ndarray, cell: tuple[int, int]) -> bool:
+def is_not_bridge(assigned: np.ndarray, cell: tuple[int, int]) -> bool:
     """
     Check if removing `cell` from `mat` will result in a connected assignment.
     :param assigned: assignment matrix
@@ -70,16 +70,18 @@ def is_bridge(assigned: np.ndarray, cell: tuple[int, int]) -> bool:
     if c < col - 1 and assigned[r, c + 1] == label:
         neighbors[3] = (r, c + 1)
 
+    # Remove the label, check for connectivity then restore the label
+    assigned[cell] = -1
     # Check every pair of neighbors to see if they are still connected
     for i in range(4):
         for j in range(i):
             if neighbors[i] and neighbors[j]:
-                # Remove the label, check for connectivity then restore the label
-                assigned[cell] = -1
                 connected = _dfs(assigned, neighbors[i], neighbors[j])  # type: ignore
-                assigned[cell] = label
                 if not connected:
+                    assigned[cell] = label
                     return False
+
+    assigned[cell] = label
     return True
 
 
@@ -113,3 +115,83 @@ def convert_to_assignment_matrix(_map: Map, uavs: list[UAV]) -> np.ndarray:
             label = _map.get_cell(r, c).assign
             assigned[r, c] = uav_names[label]
     return assigned
+
+
+def transfer_area(
+    seller: int,
+    buyer: int,
+    neighbors: set[tuple[int, int]],
+    transfer_amount: int,
+    assigned: np.ndarray,
+    init_seller_pos: tuple[int, int],
+) -> bool:
+    """
+    Transfer cells from seller to buyer.
+    :param seller: The seller node (losing area)
+    :param buyer: The buyer node (gaining area)
+    :param neighbors: The cells belonging to the seller node adjacent to the buyer node
+    :param transfer_amount: The ideal amount of cells to transfer
+    :param assigned: The assignment matrix
+    :param init_seller_pos: The original position for the seller node
+    :return: Whether the transfer was successful
+    """
+    row, col = assigned.shape
+    amount = transfer_amount
+    queue = deque(neighbors)
+    while queue and amount > 0:
+        r, c = queue.popleft()
+        if assigned[r, c] == seller and is_not_bridge(
+                assigned, (r, c)
+        ):
+            if (r, c) == init_seller_pos:
+                continue
+            assigned[r, c] = buyer
+            amount -= 1
+            for dr, dc in _DIRS:
+                nr, nc = r + dr, c + dc
+                if (
+                        0 <= nr < row
+                        and 0 <= nc < col
+                        and assigned[nr, nc] == seller
+                ):
+                    queue.append((nr, nc))
+
+    if amount == transfer_amount:
+        return False
+
+    return True
+
+
+def dfs_subtree(mat: np.ndarray, root: tuple[int, int]) -> list[set[tuple[int, int]]]:
+    """
+    Run Depth First Search on mat starting from root.
+    :param mat: matrix to run DFS on
+    :param root: the coordinate of root _node
+    :return: list of subtrees of `root` on the resulting DFS tree
+    """
+    _row, _col = mat.shape
+    _label = mat[root]
+    stack: list[tuple[tuple[int, int], set[tuple[int, int]]]] = []
+    subtrees: list[set[tuple[int, int]]] = []
+    visited = {root}
+    _r, _c = root
+    for _dr, _dc in _DIRS:
+        _nr, _nc = _r + _dr, _c + _dc
+        if 0 <= _nr < _row and 0 <= _nc < _col and mat[_nr, _nc] == _label:
+            subtree: set[tuple[int, int]] = set()
+            subtrees.append(subtree)
+            stack.append(((_nr, _nc), subtree))
+
+    while stack:
+        _node, subtree = stack.pop()
+        if _node in visited:
+            continue
+        visited.add(_node)
+        subtree.add(_node)
+        _r, _c = _node
+        for _dr, _dc in _DIRS:
+            _nr, _nc = _r + _dr, _c + _dc
+            if 0 <= _nr < _row and 0 <= _nc < _col and mat[_nr, _nc] == _label:
+                stack.append(((_nr, _nc), subtree))
+
+    return [subtree for subtree in subtrees if subtree]

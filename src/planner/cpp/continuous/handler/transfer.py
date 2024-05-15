@@ -4,7 +4,7 @@ from src.core.map import Map
 from src.core.uav import UAV
 from src.planner.cpp.continuous.handler.base import UAVChangeHandler
 from src.planner.cpp.single.planner import SingleCoveragePathPlannerFactory
-from src.planner.cpp.utils import get_assign_count, construct_adj_list, transfer_area, map_to_assignment_matrix
+from src.planner.cpp.utils import get_partition, transfer_area, map_to_assignment_matrix, get_neighbors
 
 
 class TransferHandler(UAVChangeHandler):
@@ -28,9 +28,10 @@ class TransferHandler(UAVChangeHandler):
 
         # Transfer all cells assigned to uav to the uav with minimal number of cells
         assigned = map_to_assignment_matrix(self.map, self.uavs)
-        adj_list = construct_adj_list(assigned)
-        assign_count = get_assign_count(assigned, num_uavs)
-        transfer_to = min(adj_list[uav_index], key=lambda x: assign_count[x])
+        partition = get_partition(assigned, num_uavs)
+        neighbors = get_neighbors(assigned, partition[uav_index])
+        
+        transfer_to = min(neighbors, key=lambda x: len(partition[x]))
         assigned[assigned == uav_index] = transfer_to
         assigned[assigned > uav_index] -= 1
 
@@ -59,16 +60,14 @@ class TransferHandler(UAVChangeHandler):
         iteration = 0
         while (not equal) and iteration < self.max_iter:
             equal = True
-            assign_count = get_assign_count(assigned, num_uavs)
-            adj_list = construct_adj_list(assigned)
-
-            for node in sorted(adj_list, key=lambda x: assign_count[x]):
-                candidates = adj_list[node]
+            partition = get_partition(assigned, num_uavs)
+            for node in sorted(range(num_uavs), key=lambda x: len(partition[x])):
+                neighbors = get_neighbors(assigned, partition[node])
                 for target_node in sorted(
-                        candidates, key=lambda x: assign_count[x], reverse=True
+                        neighbors, key=lambda x: len(partition[x]), reverse=True
                 ):
-                    buyer = assign_count[node]
-                    seller = assign_count[target_node]
+                    buyer = len(partition[node])
+                    seller = len(partition[target_node])
                     diff = seller - buyer
                     if diff < 1 or (diff == 1 and seller == target_cell_count + 1):
                         continue
@@ -78,7 +77,7 @@ class TransferHandler(UAVChangeHandler):
                     success = transfer_area(
                         target_node,
                         node,
-                        adj_list[target_node][node],
+                        neighbors[target_node],
                         to_transfer,
                         assigned,
                         init_pos,  # type: ignore

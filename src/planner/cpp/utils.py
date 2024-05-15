@@ -1,5 +1,6 @@
 import random
 from collections import defaultdict, deque
+from collections.abc import Iterable
 
 import numpy as np
 
@@ -107,22 +108,10 @@ def _dfs(mat: np.ndarray, start: tuple[int, int], end: tuple[int, int]) -> bool:
     return False
 
 
-def convert_to_assignment_matrix(_map: Map, uavs: list[UAV]) -> np.ndarray:
-    assigned = -1 * _map.to_numpy()
-    uav_names = {uav.name: i for i, uav in enumerate(uavs)}
-    for r in range(_map.height):
-        for c in range(_map.width):
-            if assigned[r, c] < 0:
-                continue
-            label = _map.get_cell(r, c).assign
-            assigned[r, c] = uav_names[label]
-    return assigned
-
-
 def transfer_area(
     seller: int,
     buyer: int,
-    neighbors: set[tuple[int, int]],
+    neighbors: Iterable[tuple[int, int]],
     transfer_amount: int,
     assigned: np.ndarray,
     init_seller_pos: tuple[int, int],
@@ -209,3 +198,23 @@ def map_to_assignment_matrix(_map: Map, uavs: list[UAV]) -> np.ndarray:
             label = _map.get_cell(r, c).assign
             assigned[r, c] = uav_names[label]
     return assigned
+
+
+def get_partition(assigned: np.ndarray, size: int) -> list[list[tuple[int, int]]]:
+    partition = [[] for _ in range(size)]
+    for index, val in np.ndenumerate(assigned):
+        if val >= 0:
+            partition[val].append(index)
+    return partition
+
+
+def get_neighbors(assigned: np.ndarray, cells: list[tuple[int, int]]) -> dict[int, set[tuple[int, int]]]:
+    row, col = assigned.shape
+    neighbors = defaultdict(set)
+    label = assigned[cells[0]]
+    for r, c in cells:
+        for dr, dc in _DIRS:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < row and 0 <= nc < col and assigned[nr, nc] != label:
+                neighbors[assigned[nr, nc]].add((nr, nc))
+    return neighbors

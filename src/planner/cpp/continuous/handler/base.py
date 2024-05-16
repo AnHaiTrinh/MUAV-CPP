@@ -29,7 +29,9 @@ class UAVChangeHandlerFactory:
     _registry: dict[str, Type[UAVChangeHandler]] = {}
 
     @classmethod
-    def get_handler(cls, handler_name: str, uavs: list[UAV], _map: Map, **kwargs) -> UAVChangeHandler:
+    def get_handler(
+        cls, handler_name: str, uavs: list[UAV], _map: Map, **kwargs
+    ) -> UAVChangeHandler:
         handler_cls = cls._registry.get(handler_name, None)
         if handler_cls is None:
             raise ValueError(f"Handler {handler_name} not found")

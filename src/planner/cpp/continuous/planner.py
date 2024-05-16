@@ -9,13 +9,19 @@ random.seed(42069)
 
 
 class ContinuousCoveragePathPlanner:
-    def __init__(self, uavs: list[UAV], _map: Map, multi_planner: str, handler: str, **kwargs):
+    def __init__(
+        self, uavs: list[UAV], _map: Map, multi_planner: str, handler: str, **kwargs
+    ):
         self.uavs = uavs
         self.map = _map
         for uav in self.uavs:
             self.allocate_initial_uav_position(uav)
-        self.multi_planner = MultiCoveragePathPlannerFactory.get_planner(multi_planner, uavs, _map, **kwargs)
-        self.handler = UAVChangeHandlerFactory.get_handler(handler, uavs, _map, **kwargs)
+        self.multi_planner = MultiCoveragePathPlannerFactory.get_planner(
+            multi_planner, uavs, _map, **kwargs
+        )
+        self.handler = UAVChangeHandlerFactory.get_handler(
+            handler, uavs, _map, multi_planner_name=multi_planner, **kwargs
+        )
 
     def plan(self):
         self.multi_planner.plan()

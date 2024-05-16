@@ -106,5 +106,5 @@ class MapComponent(Component):
                     int((uav.c + 0.5) * self.cell_width),
                     int((uav.r + 0.5) * self.cell_height),
                 ),
-                min(self.cell_width, self.cell_height)
+                min(self.cell_width, self.cell_height),
             )

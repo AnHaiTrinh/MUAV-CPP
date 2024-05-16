@@ -131,20 +131,14 @@ def transfer_area(
     queue = deque(neighbors)
     while queue and amount > 0:
         r, c = queue.popleft()
-        if assigned[r, c] == seller and is_not_bridge(
-                assigned, (r, c)
-        ):
+        if assigned[r, c] == seller and is_not_bridge(assigned, (r, c)):
             if (r, c) == init_seller_pos:
                 continue
             assigned[r, c] = buyer
             amount -= 1
             for dr, dc in _DIRS:
                 nr, nc = r + dr, c + dc
-                if (
-                        0 <= nr < row
-                        and 0 <= nc < col
-                        and assigned[nr, nc] == seller
-                ):
+                if 0 <= nr < row and 0 <= nc < col and assigned[nr, nc] == seller:
                     queue.append((nr, nc))
 
     if amount == transfer_amount:
@@ -208,7 +202,9 @@ def get_partition(assigned: np.ndarray, size: int) -> list[list[tuple[int, int]]
     return partition
 
 
-def get_neighbors(assigned: np.ndarray, cells: list[tuple[int, int]]) -> dict[int, set[tuple[int, int]]]:
+def get_neighbors(
+    assigned: np.ndarray, cells: list[tuple[int, int]]
+) -> dict[int, set[tuple[int, int]]]:
     row, col = assigned.shape
     neighbors = defaultdict(set)
     label = assigned[cells[0]]

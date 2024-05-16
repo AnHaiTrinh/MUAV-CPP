@@ -4,7 +4,12 @@ from src.core.map import Map
 from src.core.uav import UAV
 from src.planner.cpp.continuous.handler.base import UAVChangeHandler
 from src.planner.cpp.single.planner import SingleCoveragePathPlannerFactory
-from src.planner.cpp.utils import get_partition, transfer_area, map_to_assignment_matrix, get_neighbors
+from src.planner.cpp.utils import (
+    get_partition,
+    transfer_area,
+    map_to_assignment_matrix,
+    get_neighbors,
+)
 
 
 class TransferHandler(UAVChangeHandler):
@@ -30,7 +35,7 @@ class TransferHandler(UAVChangeHandler):
         assigned = map_to_assignment_matrix(self.map, self.uavs)
         partition = get_partition(assigned, num_uavs)
         neighbors = get_neighbors(assigned, partition[uav_index])
-        
+
         transfer_to = min(neighbors, key=lambda x: len(partition[x]))
         assigned[assigned == uav_index] = transfer_to
         assigned[assigned > uav_index] -= 1
@@ -64,7 +69,7 @@ class TransferHandler(UAVChangeHandler):
             for node in sorted(range(num_uavs), key=lambda x: len(partition[x])):
                 neighbors = get_neighbors(assigned, partition[node])
                 for target_node in sorted(
-                        neighbors, key=lambda x: len(partition[x]), reverse=True
+                    neighbors, key=lambda x: len(partition[x]), reverse=True
                 ):
                     buyer = len(partition[node])
                     seller = len(partition[target_node])

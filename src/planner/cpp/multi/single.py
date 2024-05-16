@@ -13,6 +13,7 @@ class MultiAsSingleCoveragePathPlanner(MultiCoveragePathPlanner, ABC):
     This class converts the multi-coverage problem into a single-coverage problem by assigning each UAV to a cell.
     Then the single-coverage planner is used to plan the path for each UAV
     """
+
     name = "Single"
 
     def __init__(self, uavs: list[UAV], _map: Map, **kwargs):

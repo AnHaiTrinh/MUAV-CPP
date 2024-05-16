@@ -25,7 +25,9 @@ class DARP(MultiAsSingleCoveragePathPlanner):
         super().__init__(uavs, _map, **kwargs)
 
         occupied_cells = _map.occupied_cells
-        self.occupied_indices = np.array([(cell.r, cell.c) for cell in occupied_cells]).T
+        self.occupied_indices = np.array(
+            [(cell.r, cell.c) for cell in occupied_cells]
+        ).T
 
         self.cost_matrix = np.stack(
             [

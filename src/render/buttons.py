@@ -117,6 +117,7 @@ class AnnotatedComponent(ComposableComponent):
         annotation_height: int = 25,
         annotation_color: colors.Color = colors.BLACK,
         annotation_background_color: colors.Color = colors.WHITE,
+        text_alignment: str = "left",
     ):
         new_translation = (component.rect.x, component.rect.y - annotation_height)
         new_surface = pygame.Surface(
@@ -135,8 +136,8 @@ class AnnotatedComponent(ComposableComponent):
             text=annotation,
             background_color=annotation_background_color,
             text_color=annotation_color,
-            font_ratio=1.0,
-            align="left",
+            font_ratio=0.8,
+            align=text_alignment,
         )
 
         self.add_component("annotation", annotation_button)

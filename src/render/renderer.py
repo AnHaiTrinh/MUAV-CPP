@@ -15,12 +15,13 @@ from src.render.panel import UAVPanel
 from src.render.state import StateEnum
 from src.core import colors
 from src.render.buttons import (
-    # AnnotatedComponent,
+    AnnotatedComponent,
     Button,
     ButtonTray,
 )
 from src.render.dropdown import DropDown
 from src.render.map_component import MapComponent
+
 # from src.render.slider import Slider
 
 
@@ -63,18 +64,32 @@ class Renderer(ComposableComponent):
         self.add_component("save", BorderedComponent(self.save_button, 5))
 
         self.planner_dropdown = DropDown(
-            pygame.Surface((180, 210)),
-            (600, 20),
+            pygame.Surface((150, 180)),
+            (600, 45),
             MultiCoveragePathPlannerFactory.list_planners(),
         )
-        self.add_component("planner_dropdown", self.planner_dropdown)
+        self.add_component(
+            "planner_dropdown",
+            AnnotatedComponent(
+                self.planner_dropdown,
+                "Planner",
+                text_alignment="center",
+            ),
+        )
 
         self.handler_dropdown = DropDown(
-            pygame.Surface((180, 210)),
-            (350, 20),
+            pygame.Surface((150, 180)),
+            (350, 45),
             UAVChangeHandlerFactory.list_handlers(),
         )
-        self.add_component("handler_dropdown", self.handler_dropdown)
+        self.add_component(
+            "handler_dropdown",
+            AnnotatedComponent(
+                self.handler_dropdown,
+                "UAV Change Handler",
+                text_alignment="center",
+            ),
+        )
 
         self.planner: ContinuousCoveragePathPlanner | None = None
 

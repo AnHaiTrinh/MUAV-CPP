@@ -49,11 +49,21 @@ class Map:
 
     @cached_property
     def free_cells(self) -> list[Cell]:
-        return [cell for row in self.cells for cell in row if cell.cell_type == CellType.FREE]
+        return [
+            cell
+            for row in self.cells
+            for cell in row
+            if cell.cell_type == CellType.FREE
+        ]
 
     @cached_property
     def occupied_cells(self) -> list[Cell]:
-        return [cell for row in self.cells for cell in row if cell.cell_type == CellType.OCCUPIED]
+        return [
+            cell
+            for row in self.cells
+            for cell in row
+            if cell.cell_type == CellType.OCCUPIED
+        ]
 
     def __repr__(self):
         return "\n".join("\t".join(repr(cell) for cell in row) for row in self.cells)

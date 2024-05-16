@@ -10,8 +10,7 @@ class RedistributeHandler(UAVChangeHandler):
     def __init__(self, uavs: list[UAV], _map: Map, **kwargs):
         super().__init__(uavs, _map, **kwargs)
         self.multi_planner_name = kwargs.get("multi_planner_name", "Transfer")
-        self.single_planner_name = kwargs.get("single_planner_name", "STC")
-        self.max_iter = kwargs.get("max_iter", 100)
+        self.kwargs = kwargs
 
     def handle_new_uav(self, uav: UAV) -> None:
         self.uavs.append(uav)
@@ -27,7 +26,6 @@ class RedistributeHandler(UAVChangeHandler):
             self.multi_planner_name,
             self.uavs,
             self.map,
-            single_planner_name=self.single_planner_name,
-            max_iter=self.max_iter,
+            **self.kwargs,
         )
         multi_planner.plan()

@@ -38,3 +38,7 @@ class UAVChangeHandlerFactory:
     @classmethod
     def register(cls, name: str, handler: Type[UAVChangeHandler]) -> None:
         cls._registry[name] = handler
+
+    @classmethod
+    def list_handlers(cls) -> list[str]:
+        return list(cls._registry.keys())

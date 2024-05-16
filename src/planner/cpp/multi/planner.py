@@ -22,16 +22,16 @@ class MultiCoveragePathPlanner(ABC):
         self.map = _map
 
         # Initialize the initial positions for uavs
-        # for uav in uavs:
-        #     while uav.r is None or uav.c is None:
-        #         free_cell = random.choice(self.map.free_cells)
-        #         for other_uav in self.uavs:
-        #             if free_cell == (other_uav.r, other_uav.c):
-        #                 continue
-        #         uav.r = free_cell.r
-        #         uav.c = free_cell.c
-        #         print(f"{uav.name} starts at {(uav.r, uav.c)}")
-        #         break
+        for uav in uavs:
+            while uav.r is None or uav.c is None:
+                free_cell = random.choice(self.map.free_cells)
+                for other_uav in self.uavs:
+                    if free_cell == (other_uav.r, other_uav.c):
+                        continue
+                uav.r = free_cell.r
+                uav.c = free_cell.c
+                print(f"{uav.name} starts at {(uav.r, uav.c)}")
+                break
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -59,5 +59,5 @@ class MultiCoveragePathPlannerFactory:
         cls._registry[name] = planner
 
     @classmethod
-    def get_planner_names(cls) -> list[str]:
+    def list_planners(cls) -> list[str]:
         return list(cls._registry.keys())

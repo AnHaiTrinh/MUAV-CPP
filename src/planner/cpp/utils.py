@@ -201,7 +201,7 @@ def map_to_assignment_matrix(_map: Map, uavs: list[UAV]) -> np.ndarray:
 
 
 def get_partition(assigned: np.ndarray, size: int) -> list[list[tuple[int, int]]]:
-    partition = [[] for _ in range(size)]
+    partition: list[list[tuple[int, int]]] = [[] for _ in range(size)]
     for index, val in np.ndenumerate(assigned):
         if val >= 0:
             partition[val].append(index)
@@ -215,6 +215,6 @@ def get_neighbors(assigned: np.ndarray, cells: list[tuple[int, int]]) -> dict[in
     for r, c in cells:
         for dr, dc in _DIRS:
             nr, nc = r + dr, c + dc
-            if 0 <= nr < row and 0 <= nc < col and assigned[nr, nc] != label:
+            if 0 <= nr < row and 0 <= nc < col and 0 <= assigned[nr, nc] != label:
                 neighbors[assigned[nr, nc]].add((nr, nc))
     return neighbors

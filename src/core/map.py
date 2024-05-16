@@ -42,6 +42,11 @@ class Map:
     def assign(self, r: int, c: int, uav: UAV) -> None:
         self.cells[r][c].assign = uav.name
 
+    def clear_assignment(self) -> None:
+        for row in self.cells:
+            for cell in row:
+                cell.assign = ""
+
     @cached_property
     def free_cells(self) -> list[Cell]:
         return [cell for row in self.cells for cell in row if cell.cell_type == CellType.FREE]

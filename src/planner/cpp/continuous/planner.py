@@ -9,7 +9,7 @@ random.seed(42069)
 
 
 class ContinuousCoveragePathPlanner:
-    def __init__(self, uavs: list[UAV], _map: Map, multi_planner: str, handler: str = "Transfer", **kwargs):
+    def __init__(self, uavs: list[UAV], _map: Map, multi_planner: str, handler: str, **kwargs):
         self.uavs = uavs
         self.map = _map
         for uav in self.uavs:

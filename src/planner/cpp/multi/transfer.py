@@ -27,7 +27,7 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
             equal = True
             partition = get_partition(self.assigned, self.num_uavs)
 
-            for node in sorted(range(self.num_uavs), key=lambda x: partition[x]):
+            for node in sorted(range(self.num_uavs), key=lambda x: len(partition[x])):
                 neighbors = get_neighbors(self.assigned, partition[node])
                 for target_node in sorted(
                     neighbors, key=lambda x: len(partition[x]), reverse=True

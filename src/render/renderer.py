@@ -5,6 +5,7 @@ import pygame
 from src.core.map import Map
 from src.core.uav import UAV
 from src.core.utils import load_map_from_file, save_map_to_file
+from src.planner.cpp.continuous.handler.base import UAVChangeHandlerFactory
 from src.planner.cpp.multi.planner import MultiCoveragePathPlannerFactory
 from src.planner.cpp.continuous.planner import ContinuousCoveragePathPlanner
 from src.render.base import BorderedComponent, ComposableComponent
@@ -13,10 +14,14 @@ from src.render.events import UAV_COUNT_CHANGE_EVENT
 from src.render.panel import UAVPanel
 from src.render.state import StateEnum
 from src.core import colors
-from src.render.buttons import ButtonTray, AnnotatedComponent, Button
+from src.render.buttons import (
+    # AnnotatedComponent,
+    Button,
+    ButtonTray,
+)
 from src.render.dropdown import DropDown
 from src.render.map_component import MapComponent
-from src.render.slider import Slider
+# from src.render.slider import Slider
 
 
 class Renderer(ComposableComponent):
@@ -49,40 +54,47 @@ class Renderer(ComposableComponent):
         self.state_button_tray = ButtonTray(pygame.Surface((200, 50)), (20, 20))
         self.add_component("state", self.state_button_tray)
 
-        self.load_button = Button(pygame.Surface((60, 50)), (300, 20), "Load")
+        self.load_button = Button(pygame.Surface((60, 50)), (40, 120), "Load")
         self.load_button.add_click_handler(self._load_handler)
         self.add_component("load", BorderedComponent(self.load_button, 5))
 
-        self.save_button = Button(pygame.Surface((60, 50)), (400, 20), "Save")
+        self.save_button = Button(pygame.Surface((60, 50)), (140, 120), "Save")
         self.save_button.add_click_handler(self._save_handler)
         self.add_component("save", BorderedComponent(self.save_button, 5))
 
-        self.dropdown = DropDown(
+        self.planner_dropdown = DropDown(
             pygame.Surface((180, 210)),
             (600, 20),
-            MultiCoveragePathPlannerFactory.get_planner_names(),
+            MultiCoveragePathPlannerFactory.list_planners(),
         )
-        self.add_component("dropdown", self.dropdown)
+        self.add_component("planner_dropdown", self.planner_dropdown)
+
+        self.handler_dropdown = DropDown(
+            pygame.Surface((180, 210)),
+            (350, 20),
+            UAVChangeHandlerFactory.list_handlers(),
+        )
+        self.add_component("handler_dropdown", self.handler_dropdown)
 
         self.planner: ContinuousCoveragePathPlanner | None = None
 
-        self.new_uav_slider = Slider(
-            pygame.Surface((200, 42)),
-            (30, 150),
-        )
-        self.add_component(
-            "new_uav_prob",
-            AnnotatedComponent(self.new_uav_slider, "New UAV Probability"),
-        )
+        # self.new_uav_slider = Slider(
+        #     pygame.Surface((200, 42)),
+        #     (30, 150),
+        # )
+        # self.add_component(
+        #     "new_uav_prob",
+        #     AnnotatedComponent(self.new_uav_slider, "New UAV Probability"),
+        # )
 
-        self.remove_uav_slider = Slider(
-            pygame.Surface((200, 42)),
-            (330, 150),
-        )
-        self.add_component(
-            "remove_uav_prob",
-            AnnotatedComponent(self.remove_uav_slider, "Remove UAV Probability"),
-        )
+        # self.remove_uav_slider = Slider(
+        #     pygame.Surface((200, 42)),
+        #     (330, 150),
+        # )
+        # self.add_component(
+        #     "remove_uav_prob",
+        #     AnnotatedComponent(self.remove_uav_slider, "Remove UAV Probability"),
+        # )
 
         self.uavs = [UAV() for _ in range(num_uavs)]
         self._create_uav_panel()
@@ -200,7 +212,8 @@ class Renderer(ComposableComponent):
             self.planner = ContinuousCoveragePathPlanner(
                 self.uavs,
                 self.map_component.get_map(),
-                multi_planner=self.dropdown.get_selected(),
+                multi_planner=self.planner_dropdown.get_selected(),
+                handler=self.handler_dropdown.get_selected(),
             )
             self.planner.plan()
 

@@ -150,7 +150,7 @@ def transfer_area(
         r, c = queue.popleft()
         if (r, c) == init_seller_pos:
             continue
-        if _is_not_bridge(assigned, (r, c)):
+        if _is_not_bridge(assigned, (r, c)) and strongly_connected((r, c), buyer):
             assigned[r, c] = buyer
             amount -= 1
             for dr, dc in _4_DIRS:

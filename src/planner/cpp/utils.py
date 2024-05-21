@@ -8,7 +8,8 @@ from src.core.map import Map
 from src.core.uav import UAV
 
 random.seed(42069)
-_DIRS = ((-1, 0), (0, -1), (0, 1), (1, 0))
+_4_DIRS = ((-1, 0), (0, -1), (0, 1), (1, 0))
+_8_DIRS = ((-1, 0), (0, -1), (0, 1), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1))
 
 
 def get_assign_count(assigned: np.ndarray, size: int) -> np.ndarray:
@@ -40,7 +41,7 @@ def construct_adj_list(
         for c in range(col):
             if assigned[r, c] < 0:
                 continue
-            for dr, dc in _DIRS[:2]:
+            for dr, dc in _4_DIRS[:2]:
                 nr, nc = r + dr, c + dc
                 if (
                     0 <= nr < row
@@ -52,7 +53,7 @@ def construct_adj_list(
     return adj_list
 
 
-def is_not_bridge(assigned: np.ndarray, cell: tuple[int, int]) -> bool:
+def _is_not_bridge(assigned: np.ndarray, cell: tuple[int, int]) -> bool:
     """
     Check if removing `cell` from `mat` will result in a connected assignment.
     :param assigned: assignment matrix
@@ -79,7 +80,7 @@ def is_not_bridge(assigned: np.ndarray, cell: tuple[int, int]) -> bool:
     for i in range(4):
         for j in range(i):
             if neighbors[i] and neighbors[j]:
-                connected = _dfs(assigned, neighbors[i], neighbors[j])  # type: ignore
+                connected = _is_connected(assigned, neighbors[i], neighbors[j])  # type: ignore
                 if not connected:
                     assigned[cell] = label
                     return False
@@ -88,23 +89,23 @@ def is_not_bridge(assigned: np.ndarray, cell: tuple[int, int]) -> bool:
     return True
 
 
-def _dfs(mat: np.ndarray, start: tuple[int, int], end: tuple[int, int]) -> bool:
+def _is_connected(mat: np.ndarray, start: tuple[int, int], end: tuple[int, int]) -> bool:
     row, col = mat.shape
-    stack = [start]
+    q = deque([start])
     visited = set()
     assert mat[start] == mat[end]
     label = mat[start]
-    while stack:
-        r, c = stack.pop()
+    while q:
+        r, c = q.popleft()
         if (r, c) == end:
             return True
         if (r, c) in visited:
             continue
         visited.add((r, c))
-        for dr, dc in _DIRS:
+        for dr, dc in _4_DIRS:
             nr, nc = r + dr, c + dc
             if 0 <= nr < row and 0 <= nc < col and mat[nr, nc] == label:
-                stack.append((nr, nc))
+                q.append((nr, nc))
     return False
 
 
@@ -128,15 +129,31 @@ def transfer_area(
     """
     row, col = assigned.shape
     amount = transfer_amount
+
+    def strongly_connected(cell: tuple[int, int], label: int) -> bool:
+        """
+        Check if cell is connected to at least 1/4 of its neighbors with `label`(8-direction).
+        """
+        nonlocal row, col, assigned
+        _r, _c = cell
+        neighbor_count = new_label_neighbor_count = 0
+        for _dr, _dc in _8_DIRS:
+            _nr, _nc = _r + _dr, _c + _dc
+            if 0 <= _nr < row and 0 <= _nc < col and assigned[_nr, _nc] >= 0:
+                neighbor_count += 1
+                if assigned[_nr, _nc] == label:
+                    new_label_neighbor_count += 1
+        return new_label_neighbor_count * 4 > neighbor_count
+
     queue = deque(neighbors)
     while queue and amount > 0:
         r, c = queue.popleft()
-        if assigned[r, c] == seller and is_not_bridge(assigned, (r, c)):
-            if (r, c) == init_seller_pos:
-                continue
+        if (r, c) == init_seller_pos:
+            continue
+        if _is_not_bridge(assigned, (r, c)) and strongly_connected((r, c), buyer):
             assigned[r, c] = buyer
             amount -= 1
-            for dr, dc in _DIRS:
+            for dr, dc in _4_DIRS:
                 nr, nc = r + dr, c + dc
                 if 0 <= nr < row and 0 <= nc < col and assigned[nr, nc] == seller:
                     queue.append((nr, nc))
@@ -160,7 +177,7 @@ def dfs_subtree(mat: np.ndarray, root: tuple[int, int]) -> list[set[tuple[int, i
     subtrees: list[set[tuple[int, int]]] = []
     visited = {root}
     _r, _c = root
-    for _dr, _dc in _DIRS:
+    for _dr, _dc in _4_DIRS:
         _nr, _nc = _r + _dr, _c + _dc
         if 0 <= _nr < _row and 0 <= _nc < _col and mat[_nr, _nc] == _label:
             subtree: set[tuple[int, int]] = set()
@@ -174,12 +191,22 @@ def dfs_subtree(mat: np.ndarray, root: tuple[int, int]) -> list[set[tuple[int, i
         visited.add(_node)
         subtree.add(_node)
         _r, _c = _node
-        for _dr, _dc in _DIRS:
+        for _dr, _dc in _4_DIRS:
             _nr, _nc = _r + _dr, _c + _dc
             if 0 <= _nr < _row and 0 <= _nc < _col and mat[_nr, _nc] == _label:
                 stack.append(((_nr, _nc), subtree))
 
     return [subtree for subtree in subtrees if subtree]
+
+
+# def dfs_weighted_tree(adj_list: dict[int, Iterable[int]], root: int) -> dict[int, tuple[int, int]]:
+#     """
+#     Run Depth First Search on the adjacency list to get the weighted tree
+#     :param adj_list: adjacency list of nodes
+#     :param root: root node
+#     :return: Adjacency list of DFS tree weighted by the number of child nodes
+#     """
+#    pass
 
 
 def map_to_assignment_matrix(_map: Map, uavs: list[UAV]) -> np.ndarray:
@@ -209,7 +236,7 @@ def get_neighbors(
     neighbors = defaultdict(set)
     label = assigned[cells[0]]
     for r, c in cells:
-        for dr, dc in _DIRS:
+        for dr, dc in _4_DIRS:
             nr, nc = r + dr, c + dc
             if 0 <= nr < row and 0 <= nc < col and 0 <= assigned[nr, nc] != label:
                 neighbors[assigned[nr, nc]].add((nr, nc))

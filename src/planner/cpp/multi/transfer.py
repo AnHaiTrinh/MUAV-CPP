@@ -85,10 +85,15 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
 
 if __name__ == "__main__":
     from src.core.utils import load_map_from_file
+    from src.planner.cpp.utils import get_assign_count
+    import time
 
-    my_map = load_map_from_file("../../../../images_filled/London_2.png")
+    my_map = load_map_from_file("../../../../images_filled/Denver_0.png")
 
     my_uavs = [UAV(name=f"UAV{i + 1}") for i in range(8)]
 
     transfer = AreaTransferringPlanner(my_uavs, my_map)
+    start = time.perf_counter()
     transfer.plan()
+    print(f"Time: {time.perf_counter() - start}")
+    print(get_assign_count(transfer.assigned, len(my_uavs)))

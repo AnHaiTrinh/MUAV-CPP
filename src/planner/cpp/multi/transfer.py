@@ -33,12 +33,14 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
                     neighbors, key=lambda x: len(partition[x]), reverse=True
                 ):
                     buyer = len(partition[node])
-                    seller = len(partition[target_node])
-                    diff = seller - buyer
-                    if diff < 1 or (diff == 1 and seller == self.target_cell_count + 1):
+                    if buyer > self.target_cell_count:
                         continue
+                    # seller = len(partition[target_node])
+                    # diff = seller - buyer
+                    # if diff < 1 or (diff == 1 and seller == self.target_cell_count + 1):
+                    #     continue
 
-                    to_transfer = (diff + 1) // 2
+                    to_transfer = self.target_cell_count - buyer
                     init_pos = (self.uavs[target_node].r, self.uavs[target_node].c)  # type: ignore
                     success = transfer_area(
                         target_node,
@@ -89,11 +91,11 @@ if __name__ == "__main__":
     import time
 
     my_map = load_map_from_file("../../../../images_filled/Denver_0.png")
-
-    my_uavs = [UAV(name=f"UAV{i + 1}") for i in range(8)]
+    NUM_UAVS = 8
+    my_uavs = [UAV(name=f"UAV{i + 1}") for i in range(NUM_UAVS)]
 
     transfer = AreaTransferringPlanner(my_uavs, my_map)
     start = time.perf_counter()
     transfer.plan()
     print(f"Time: {time.perf_counter() - start}")
-    print(get_assign_count(transfer.assigned, len(my_uavs)))
+    print(get_assign_count(transfer.assigned, NUM_UAVS))

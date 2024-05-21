@@ -112,7 +112,7 @@ def _is_connected(mat: np.ndarray, start: tuple[int, int], end: tuple[int, int])
 def transfer_area(
     seller: int,
     buyer: int,
-    neighbors: Iterable[tuple[int, int]],
+    neighbors: set[tuple[int, int]],
     transfer_amount: int,
     assigned: np.ndarray,
     init_seller_pos: tuple[int, int],
@@ -150,7 +150,7 @@ def transfer_area(
         r, c = queue.popleft()
         if (r, c) == init_seller_pos:
             continue
-        if _is_not_bridge(assigned, (r, c)) and strongly_connected((r, c), buyer):
+        if _is_not_bridge(assigned, (r, c)):
             assigned[r, c] = buyer
             amount -= 1
             for dr, dc in _4_DIRS:
@@ -164,7 +164,61 @@ def transfer_area(
     return True
 
 
-def dfs_subtree(mat: np.ndarray, root: tuple[int, int]) -> list[set[tuple[int, int]]]:
+def transfer_area_subtree(
+    seller: int,
+    buyer: int,
+    neighbors: set[tuple[int, int]],
+    transfer_amount: int,
+    assigned: np.ndarray,
+    init_seller_pos: tuple[int, int],
+):
+    """
+    Transfer cells from seller to buyer.
+    :param seller: The seller node (losing area)
+    :param buyer: The buyer node (gaining area)
+    :param neighbors: The cells belonging to the seller node adjacent to the buyer node
+    :param transfer_amount: The ideal amount of cells to transfer
+    :param assigned: The assignment matrix
+    :param init_seller_pos: The original position for the seller node
+    :return: Whether the transfer was successful
+    """
+    row, col = assigned.shape
+    amount = transfer_amount
+
+    queue = deque(neighbors)
+    while queue and amount > 0:
+        r, c = queue.popleft()
+        if assigned[r, c] == buyer or (r, c) == init_seller_pos:
+            continue
+        subtrees = _dfs_subtree(assigned, (r, c))
+        if len(subtrees) == 1:
+            assigned[r, c] = buyer
+            amount -= 1
+            for dr, dc in _4_DIRS:
+                nr, nc = r + dr, c + dc
+                if 0 <= nr < row and 0 <= nc < col and assigned[nr, nc] == seller:
+                    queue.append((nr, nc))
+        else:
+            transfer_subtrees = filter(lambda x: init_seller_pos not in x, subtrees)
+            if sum(len(subtree) for subtree in transfer_subtrees) <= amount:
+                break
+            assigned[r, c] = buyer
+            for subtree in transfer_subtrees:
+                for cr, cc in subtree:
+                    assigned[cr, cc] = buyer
+                    amount -= 1
+                    for cdr, cdc in _4_DIRS:
+                        cnr, cnc = cr + cdr, cc + cdc
+                        if 0 <= cnr < row and 0 <= cnc < col and assigned[cnr, cnc] == seller:
+                            queue.append((cnr, cnc))
+
+    if amount == transfer_amount:
+        return False
+
+    return True
+
+
+def _dfs_subtree(mat: np.ndarray, root: tuple[int, int]) -> list[set[tuple[int, int]]]:
     """
     Run Depth First Search on mat starting from root.
     :param mat: matrix to run DFS on

@@ -23,6 +23,7 @@ class UAV:
         if self.r is not None and self.c is not None and self.trajectory is not None:
             self.init_position()
         self.color = ColorManager.get_color()
+        self.movement: list[tuple[int, int]] = [(r, c)] if r is not None and c is not None else []
 
     def move(self) -> None:
         if self.pos_idx is None:
@@ -34,6 +35,8 @@ class UAV:
         next_cell = self.trajectory[self.pos_idx]
         self.r = next_cell.r
         self.c = next_cell.c
+        if (self.r, self.c) != self.movement[0]:
+            self.movement.append((self.r, self.c))
 
     @property
     def trajectory_length(self) -> float:
@@ -51,6 +54,7 @@ class UAV:
         self.trajectory = trajectory
         if self.r is None or self.c is None:
             self.r, self.c = self.trajectory[0].r, self.trajectory[0].c
+        self.movement = [(self.r, self.c)]
         self.init_position()
 
     def init_position(self):
@@ -70,6 +74,7 @@ class UAV:
         self.r = None
         self.c = None
         self.trajectory = None
+        self.movement = []
 
     def __repr__(self):
         return f"UAV {self.name}"

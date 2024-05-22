@@ -35,12 +35,12 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
                     buyer = len(partition[node])
                     if buyer > self.target_cell_count:
                         continue
-                    # seller = len(partition[target_node])
-                    # diff = seller - buyer
-                    # if diff < 1 or (diff == 1 and seller == self.target_cell_count + 1):
-                    #     continue
+                    seller = len(partition[target_node])
+                    diff = seller - buyer
+                    if diff < 1 or (diff == 1 and seller == self.target_cell_count + 1):
+                        continue
 
-                    to_transfer = self.target_cell_count - buyer
+                    to_transfer = (diff + 1) >> 1
                     init_pos = (self.uavs[target_node].r, self.uavs[target_node].c)  # type: ignore
                     success = transfer_area(
                         target_node,
@@ -87,7 +87,7 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
 
 if __name__ == "__main__":
     from src.core.utils import load_map_from_file
-    from src.planner.cpp.utils import get_assign_count
+    from src.planner.cpp.utils import get_assign_count, dfs_weighted_tree, construct_adj_list
     import time
 
     my_map = load_map_from_file("../../../../images_filled/Denver_0.png")
@@ -99,3 +99,8 @@ if __name__ == "__main__":
     transfer.plan()
     print(f"Time: {time.perf_counter() - start}")
     print(get_assign_count(transfer.assigned, NUM_UAVS))
+
+    adj_list = construct_adj_list(transfer.assigned)
+    print({k: [_v for _v in v] for k, v in adj_list.items()})
+    adj_list_weight, weights = dfs_weighted_tree(adj_list, 0)  # type: ignore
+    print(adj_list_weight, weights)

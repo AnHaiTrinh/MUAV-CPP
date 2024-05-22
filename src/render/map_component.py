@@ -75,23 +75,22 @@ class MapComponent(Component):
 
     def _draw_uav_trajectories(self):
         for uav in self.uavs:
-            # Draw trajectory
-            trajectory = uav.trajectory
-            if trajectory is None:
-                raise ValueError("UAV trajectory is None")
+            # Draw movement
+            movement = uav.movement
+            if movement is None:
+                raise ValueError("UAV movement is None")
 
-            length = len(trajectory)
-            for j in range(length):
+            for j in range(len(movement) - 1):
                 pygame.draw.line(
                     self.surface,
                     uav.color,
                     (
-                        (trajectory[j].c + 0.5) * self.cell_width,
-                        (trajectory[j].r + 0.5) * self.cell_height,
+                        (movement[j][1] + 0.5) * self.cell_width,
+                        (movement[j][0] + 0.5) * self.cell_height,
                     ),
                     (
-                        (trajectory[(j + 1) % length].c + 0.5) * self.cell_width,
-                        (trajectory[(j + 1) % length].r + 0.5) * self.cell_height,
+                        (movement[(j + 1)][1] + 0.5) * self.cell_width,
+                        (movement[(j + 1)][0] + 0.5) * self.cell_height,
                     ),
                 )
 

@@ -253,14 +253,41 @@ def _dfs_subtree(mat: np.ndarray, root: tuple[int, int]) -> list[set[tuple[int, 
     return [subtree for subtree in subtrees if subtree]
 
 
-# def dfs_weighted_tree(adj_list: dict[int, Iterable[int]], root: int) -> dict[int, tuple[int, int]]:
-#     """
-#     Run Depth First Search on the adjacency list to get the weighted tree
-#     :param adj_list: adjacency list of nodes
-#     :param root: root node
-#     :return: Adjacency list of DFS tree weighted by the number of child nodes
-#     """
-#    pass
+def dfs_weighted_tree(adj_list: dict[int, Iterable[int]], root: int) -> tuple[dict[int, list[int]], dict[int, int]]:
+    """
+    Run Depth First Search on the adjacency list to get the weighted tree
+    :param adj_list: adjacency list of nodes
+    :param root: root node
+    :return: Adjacency list of DFS tree weighted by the number of child nodes
+    """
+    adj_list_weighted: dict[int, list[int]] = defaultdict(list)
+    visited: set[int] = set()
+
+    q = deque([(root, None)])
+    while q:
+        node, parent = q.popleft()
+        if node in visited:
+            continue
+
+        visited.add(node)
+        if parent is not None:
+            adj_list_weighted[parent].append(node)  # type: ignore
+
+        for neighbor in adj_list[node]:
+            if neighbor != parent:
+                q.append((neighbor, node))  # type: ignore
+
+    node_weight: dict[int, int] = {}
+
+    def transverse(_node: int) -> int:
+        count = 1
+        for child in adj_list_weighted[_node]:
+            count += transverse(child)
+        node_weight[_node] = count
+        return count
+
+    transverse(root)
+    return adj_list_weighted, node_weight
 
 
 def map_to_assignment_matrix(_map: Map, uavs: list[UAV]) -> np.ndarray:

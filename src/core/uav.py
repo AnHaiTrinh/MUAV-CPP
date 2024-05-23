@@ -35,8 +35,9 @@ class UAV:
         next_cell = self.trajectory[self.pos_idx]
         self.r = next_cell.r
         self.c = next_cell.c
-        if (self.r, self.c) != self.movement[0]:
-            self.movement.append((self.r, self.c))
+        if len(self.movement) > 1 and self.movement[-1] == self.movement[0]:
+            return
+        self.movement.append((self.r, self.c))
 
     @property
     def trajectory_length(self) -> float:

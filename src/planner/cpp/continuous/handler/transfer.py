@@ -6,7 +6,7 @@ from src.planner.cpp.continuous.handler.base import UAVChangeHandler
 from src.planner.cpp.single.planner import SingleCoveragePathPlannerFactory
 from src.planner.cpp.utils import (
     get_partition,
-    transfer_area,
+    transfer_area_subtree,
     map_to_assignment_matrix,
     get_neighbors,
 )
@@ -79,7 +79,7 @@ class TransferHandler(UAVChangeHandler):
 
                     to_transfer = (diff + 1) // 2
                     init_pos = (self.uavs[target_node].r, self.uavs[target_node].c)  # type: ignore
-                    success = transfer_area(
+                    success = transfer_area_subtree(
                         target_node,
                         node,
                         neighbors[target_node],

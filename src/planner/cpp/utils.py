@@ -190,8 +190,7 @@ def transfer_area_subtree(
         r, c = queue.popleft()
         if assigned[r, c] == buyer or (r, c) == init_seller_pos:
             continue
-        subtrees = _dfs_subtree(assigned, (r, c))
-        if len(subtrees) <= 1:
+        if _is_not_bridge(assigned, (r, c)):
             assigned[r, c] = buyer
             amount -= 1
             for dr, dc in _4_DIRS:
@@ -199,6 +198,7 @@ def transfer_area_subtree(
                 if 0 <= nr < row and 0 <= nc < col and assigned[nr, nc] == seller:
                     queue.append((nr, nc))
         else:
+            subtrees = _dfs_subtree(assigned, (r, c))
             transfer_subtrees = list(filter(lambda x: init_seller_pos not in x, subtrees))
             if sum(len(subtree) for subtree in transfer_subtrees) >= amount:
                 break

@@ -35,8 +35,6 @@ class UAV:
         next_cell = self.trajectory[self.pos_idx]
         self.r = next_cell.r
         self.c = next_cell.c
-        if len(self.movement) > 1 and self.movement[-1] == self.movement[0]:
-            return
         self.movement.append((self.r, self.c))
 
     @property
@@ -55,7 +53,8 @@ class UAV:
         self.trajectory = trajectory
         if self.r is None or self.c is None:
             self.r, self.c = self.trajectory[0].r, self.trajectory[0].c
-        self.movement = [(self.r, self.c)]
+        if not self.movement:
+            self.movement = [(self.r, self.c)]
         self.init_position()
 
     def init_position(self):

@@ -5,7 +5,7 @@ import numpy as np
 from src.core.map import Map
 from src.core.uav import UAV
 from src.planner.cpp.multi.single import MultiAsSingleCoveragePathPlanner
-from src.planner.cpp.utils import get_partition, transfer_area, get_neighbors
+from src.planner.cpp.utils import get_partition, transfer_area_subtree, get_neighbors
 
 _DIRS = ((-1, 0), (0, -1), (0, 1), (1, 0))
 
@@ -42,7 +42,7 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
 
                     to_transfer = (diff + 1) >> 1
                     init_pos = (self.uavs[target_node].r, self.uavs[target_node].c)  # type: ignore
-                    success = transfer_area(
+                    success = transfer_area_subtree(
                         target_node,
                         node,
                         neighbors[target_node],

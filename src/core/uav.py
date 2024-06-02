@@ -23,7 +23,9 @@ class UAV:
         if self.r is not None and self.c is not None and self.trajectory is not None:
             self.init_position()
         self.color = ColorManager.get_color()
-        self.movement: list[tuple[int, int]] = [(r, c)] if r is not None and c is not None else []
+        self.movement: list[tuple[int, int]] = (
+            [(r, c)] if r is not None and c is not None else []
+        )
 
     def move(self) -> None:
         if self.pos_idx is None:

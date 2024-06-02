@@ -86,7 +86,7 @@ class Renderer(ComposableComponent):
             "handler_dropdown",
             AnnotatedComponent(
                 self.handler_dropdown,
-                "UAV Change Handler",
+                "Change Handler",
                 text_alignment="center",
             ),
         )

@@ -57,8 +57,20 @@ class MapComponent(Component):
     def _draw_map(self):
         for i in range(self._map.width):
             for j in range(self._map.height):
-                cell_type = self._map.get_cell(i, j).cell_type
-                color = colors.WHITE if cell_type == CellType.FREE else colors.BLACK
+                cell = self._map.get_cell(i, j)
+                if cell.assign:
+                    try:
+                        color = next(
+                            filter(lambda uav: uav.name == cell.assign, self.uavs)
+                        ).color
+                    except StopIteration:
+                        color = colors.WHITE
+                else:
+                    color = (
+                        colors.WHITE
+                        if cell.cell_type == CellType.FREE
+                        else colors.BLACK
+                    )
                 pygame.draw.rect(
                     self.surface,
                     color,
@@ -75,24 +87,24 @@ class MapComponent(Component):
 
     def _draw_uav_trajectories(self):
         for uav in self.uavs:
-            # Draw movement
-            movement = uav.movement
-            if movement is None:
-                raise ValueError("UAV movement is None")
-
-            for j in range(len(movement) - 1):
-                pygame.draw.line(
-                    self.surface,
-                    uav.color,
-                    (
-                        (movement[j][1] + 0.5) * self.cell_width,
-                        (movement[j][0] + 0.5) * self.cell_height,
-                    ),
-                    (
-                        (movement[(j + 1)][1] + 0.5) * self.cell_width,
-                        (movement[(j + 1)][0] + 0.5) * self.cell_height,
-                    ),
-                )
+            # # Draw movement
+            # movement = uav.movement
+            # if movement is None:
+            #     raise ValueError("UAV movement is None")
+            #
+            # for j in range(len(movement) - 1):
+            #     pygame.draw.line(
+            #         self.surface,
+            #         uav.color,
+            #         (
+            #             (movement[j][1] + 0.5) * self.cell_width,
+            #             (movement[j][0] + 0.5) * self.cell_height,
+            #         ),
+            #         (
+            #             (movement[(j + 1)][1] + 0.5) * self.cell_width,
+            #             (movement[(j + 1)][0] + 0.5) * self.cell_height,
+            #         ),
+            #     )
 
             # Draw UAV
             if uav.r is None or uav.c is None:

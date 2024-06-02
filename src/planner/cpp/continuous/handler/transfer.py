@@ -25,7 +25,7 @@ class TransferHandler(UAVChangeHandler):
         assigned = map_to_assignment_matrix(self.map, self.uavs)
         assigned[uav.r, uav.c] = len(self.uavs)
         self.uavs.append(uav)
-        self.reassign(assigned)
+        self._reassign(assigned)
 
     def handle_removed_uav(self, uav: UAV):
         num_uavs = len(self.uavs)
@@ -41,9 +41,9 @@ class TransferHandler(UAVChangeHandler):
         assigned[assigned > uav_index] -= 1
 
         self.uavs.remove(uav)
-        self.reassign(assigned)
+        self._reassign(assigned)
 
-    def reassign(self, assignment_matrix: np.ndarray):
+    def _reassign(self, assignment_matrix: np.ndarray) -> None:
         self._transfer(assignment_matrix)
         for i, uav in enumerate(self.uavs):
             row_idx, col_idx = np.where(assignment_matrix == i)
@@ -58,7 +58,8 @@ class TransferHandler(UAVChangeHandler):
             )
             single_planner.plan()
 
-    def _transfer(self, assigned: np.ndarray):
+    def _transfer(self, assigned: np.ndarray) -> None:
+        """Modify assigned inplace"""
         num_uavs = len(self.uavs)
         target_cell_count = len(self.map.free_cells) // num_uavs
         equal = False
@@ -79,7 +80,7 @@ class TransferHandler(UAVChangeHandler):
 
                     to_transfer = (diff + 1) // 2
                     init_pos = (self.uavs[target_node].r, self.uavs[target_node].c)  # type: ignore
-                    success = transfer_area_subtree(
+                    transferred = transfer_area_subtree(
                         target_node,
                         node,
                         neighbors[target_node],
@@ -87,7 +88,7 @@ class TransferHandler(UAVChangeHandler):
                         assigned,
                         init_pos,  # type: ignore
                     )
-                    if not success:
+                    if not transferred:
                         continue
 
                     equal = False

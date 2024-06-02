@@ -45,7 +45,7 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
 
                 to_transfer = (diff + 1) >> 1
                 init_pos = (self.uavs[target_node].r, self.uavs[target_node].c)  # type: ignore
-                success = transfer_area_subtree(
+                transferred = transfer_area_subtree(
                     target_node,
                     node,
                     neighbors[target_node],
@@ -53,7 +53,7 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
                     self.assigned,
                     init_pos,  # type: ignore
                 )
-                if not success:
+                if not transferred:
                     continue
 
                 # equal = False
@@ -90,7 +90,11 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
 
 if __name__ == "__main__":
     from src.core.utils import load_map_from_file
-    from src.planner.cpp.utils import get_assign_count, dfs_weighted_tree, construct_adj_list
+    from src.planner.cpp.utils import (
+        get_assign_count,
+        dfs_weighted_tree,
+        construct_adj_list,
+    )
     import time
 
     my_map = load_map_from_file("../../../../images_filled/Denver_0.png")

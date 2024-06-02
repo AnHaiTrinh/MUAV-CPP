@@ -1,4 +1,5 @@
 from collections import deque
+from itertools import cycle
 
 import numpy as np
 
@@ -19,45 +20,47 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
 
         self.single_planner_name = kwargs.get("single_planner_name", "STC")
         self.max_iter = kwargs.get("max_iter", 100)
+        self.uav_iter = cycle(range(len(self.uavs)))
 
     def assign(self) -> np.ndarray:
-        equal = False
+        # equal = False
         iteration = 0
-        while (not equal) and iteration < self.max_iter:
-            equal = True
+        while iteration < self.max_iter:  # and (not equal)
+            # equal = True
             partition = get_partition(self.assigned, self.num_uavs)
 
-            for node in sorted(range(self.num_uavs), key=lambda x: len(partition[x])):
-                neighbors = get_neighbors(self.assigned, partition[node])
-                for target_node in sorted(
-                    neighbors, key=lambda x: len(partition[x]), reverse=True
-                ):
-                    buyer = len(partition[node])
-                    if buyer > self.target_cell_count:
-                        continue
-                    seller = len(partition[target_node])
-                    diff = seller - buyer
-                    if diff < 1 or (diff == 1 and seller == self.target_cell_count + 1):
-                        continue
+            # for node in sorted(range(self.num_uavs), key=lambda x: len(partition[x])):
+            node = next(self.uav_iter)
+            neighbors = get_neighbors(self.assigned, partition[node])
+            for target_node in sorted(
+                neighbors, key=lambda x: len(partition[x]), reverse=True
+            ):
+                buyer = len(partition[node])
+                if buyer > self.target_cell_count:
+                    continue
+                seller = len(partition[target_node])
+                diff = seller - buyer
+                if diff < 1 or (diff == 1 and seller == self.target_cell_count + 1):
+                    continue
 
-                    to_transfer = (diff + 1) >> 1
-                    init_pos = (self.uavs[target_node].r, self.uavs[target_node].c)  # type: ignore
-                    success = transfer_area_subtree(
-                        target_node,
-                        node,
-                        neighbors[target_node],
-                        to_transfer,
-                        self.assigned,
-                        init_pos,  # type: ignore
-                    )
-                    if not success:
-                        continue
+                to_transfer = (diff + 1) >> 1
+                init_pos = (self.uavs[target_node].r, self.uavs[target_node].c)  # type: ignore
+                success = transfer_area_subtree(
+                    target_node,
+                    node,
+                    neighbors[target_node],
+                    to_transfer,
+                    self.assigned,
+                    init_pos,  # type: ignore
+                )
+                if not success:
+                    continue
 
-                    equal = False
-                    break
+                # equal = False
+                break
 
-                if not equal:
-                    break
+            # if not equal:
+            #     break
 
             iteration += 1
 
@@ -98,9 +101,11 @@ if __name__ == "__main__":
     start = time.perf_counter()
     transfer.plan()
     print(f"Time: {time.perf_counter() - start}")
-    print(get_assign_count(transfer.assigned, NUM_UAVS))
+    assign_count = get_assign_count(transfer.assigned, NUM_UAVS)
+    print(assign_count)
 
     adj_list = construct_adj_list(transfer.assigned)
     print({k: [_v for _v in v] for k, v in adj_list.items()})
-    adj_list_weight, weights = dfs_weighted_tree(adj_list, 0)  # type: ignore
-    print(adj_list_weight, weights)
+    adj_list_weight, weights = dfs_weighted_tree(adj_list, assign_count, 0)  # type: ignore
+    print(adj_list_weight)
+    print(weights)

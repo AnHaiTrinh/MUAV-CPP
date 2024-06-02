@@ -14,7 +14,7 @@ _8_DIRS = ((-1, 0), (0, -1), (0, 1), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1))
 
 def get_assign_count(assigned: np.ndarray, size: int) -> np.ndarray:
     values, counts = np.unique(assigned, return_counts=True)
-    assign_count = np.zeros(size)
+    assign_count = np.zeros(size, dtype=int)
     for value, count in zip(values, counts):
         if value >= 0:
             assign_count[value] = count
@@ -253,12 +253,17 @@ def _dfs_subtree(mat: np.ndarray, root: tuple[int, int]) -> list[set[tuple[int, 
     return [subtree for subtree in subtrees if subtree]
 
 
-def dfs_weighted_tree(adj_list: dict[int, Iterable[int]], root: int) -> tuple[dict[int, list[int]], dict[int, int]]:
+def dfs_weighted_tree(
+    adj_list: dict[int, Iterable[int]],
+    node_weights: np.ndarray[int],
+    root: int,
+) -> tuple[dict[int, list[int]], dict[int, tuple[int, int]]]:
     """
     Run Depth First Search on the adjacency list to get the weighted tree
     :param adj_list: adjacency list of nodes
+    :param node_weights: the weight of each node
     :param root: root node
-    :return: Adjacency list of DFS tree weighted by the number of child nodes
+    :return: Adjacency list of DFS tree, Dict of each node to the number of children and theirs weights
     """
     adj_list_weighted: dict[int, list[int]] = defaultdict(list)
     visited: set[int] = set()
@@ -277,14 +282,17 @@ def dfs_weighted_tree(adj_list: dict[int, Iterable[int]], root: int) -> tuple[di
             if neighbor != parent:
                 q.append((neighbor, node))  # type: ignore
 
-    node_weight: dict[int, int] = {}
+    node_weight: dict[int, tuple[int, int]] = {}
 
-    def transverse(_node: int) -> int:
+    def transverse(_node: int) -> tuple[int, int]:
         count = 1
+        weight = node_weights[_node]
         for child in adj_list_weighted[_node]:
-            count += transverse(child)
-        node_weight[_node] = count
-        return count
+            child_count, child_weight = transverse(child)
+            count += child_count
+            weight += child_weight
+        node_weight[_node] = (count, weight)
+        return count, weight
 
     transverse(root)
     return adj_list_weighted, node_weight

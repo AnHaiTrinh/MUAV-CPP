@@ -40,9 +40,13 @@ class VoronoiHandler(UAVChangeHandler):
         assigned[assigned > uav_index] -= 1
 
         self.uavs.pop(uav_index)
-        self.voronoi_reassign(assigned, [label if label <= uav_index else label - 1 for label in labels])
+        self.voronoi_reassign(
+            assigned, [label if label <= uav_index else label - 1 for label in labels]
+        )
 
-    def voronoi_reassign(self, assignment_matrix: np.ndarray, labels: list[int]) -> None:
+    def voronoi_reassign(
+        self, assignment_matrix: np.ndarray, labels: list[int]
+    ) -> None:
         """Modify assignment_matrix inplace"""
         row, col = assignment_matrix.shape
         partitions = get_partition(assignment_matrix, len(self.uavs))
@@ -75,7 +79,9 @@ class VoronoiHandler(UAVChangeHandler):
             )
             single_planner.plan()
 
-    def _expand(self, assignment_matrix: np.ndarray, start: tuple[int, int]) -> list[int]:
+    def _expand(
+        self, assignment_matrix: np.ndarray, start: tuple[int, int]
+    ) -> list[int]:
         """Run BFS from start cell to get all labels of uav in the adjacent area"""
         row, col = assignment_matrix.shape
         ideal_area = len(self.map.free_cells) // len(self.uavs)

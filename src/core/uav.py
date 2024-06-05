@@ -1,7 +1,7 @@
 from numpy.random import choice
 
 from src.core.cell import Cell
-from src.core.colors import ColorManager
+from src.core import colors
 
 
 class UAV:
@@ -11,6 +11,7 @@ class UAV:
         r: int | None = None,
         c: int | None = None,
         trajectory: list[Cell] | None = None,
+        has_color: bool = True,
     ):
         if name is None:
             self.name = uav_name_generator()
@@ -22,7 +23,7 @@ class UAV:
         self.pos_idx: int | None = None
         if self.r is not None and self.c is not None and self.trajectory is not None:
             self.init_position()
-        self.color = ColorManager.get_color()
+        self.color = colors.ColorManager.get_color() if has_color else colors.BLACK
         self.movement: list[tuple[int, int]] = (
             [(r, c)] if r is not None and c is not None else []
         )

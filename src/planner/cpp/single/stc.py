@@ -23,6 +23,10 @@ class STCPlanner(SingleCoveragePathPlanner):
                 else:
                     row.append(Cell(CellType.OCCUPIED, cell.r, cell.c))
             cells.append(row)
+        mst_algo = f'_{kwargs.get("mst_algo", "kruskal")}'
+        if not hasattr(self, mst_algo):
+            raise KeyError(f"Unsupported MST algorithm {mst_algo}")
+        self.mst_algo = getattr(self, mst_algo)
         self.area = Map(cells)
         self.dirs = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
@@ -38,7 +42,7 @@ class STCPlanner(SingleCoveragePathPlanner):
         coverage_path: list[tuple[int, int]] = [start_pos]
         visited: set[tuple[int, int]] = {start_pos}
 
-        adj_list = self._kruskal(start_pos)
+        adj_list = self.mst_algo(start_pos)
 
         def is_valid_movement(
             current: tuple[int, int],

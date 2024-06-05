@@ -61,7 +61,7 @@ if __name__ == "__main__":
     my_uavs = [UAV(name=f"UAV{i + 1}") for i in range(NUM_UAVS)]
 
     transfer = ContinuousCoveragePathPlanner(
-        my_uavs, my_map, multi_planner="Transfer", handler="W_Transfer"
+        my_uavs, my_map, multi_planner="Transfer", handler="Voronoi"
     )
     start = time.perf_counter()
     transfer.plan()
@@ -69,8 +69,8 @@ if __name__ == "__main__":
     print(get_assign_count(map_to_assignment_matrix(my_map, my_uavs), NUM_UAVS))
 
     for _ in range(random.randint(0, 100)):
-        for uav in my_uavs:
-            uav.move()
+        for my_uav in my_uavs:
+            my_uav.move()
     start = time.perf_counter()
     transfer.handle_removed_uav("UAV2")
     print(f"Time: {time.perf_counter() - start}")

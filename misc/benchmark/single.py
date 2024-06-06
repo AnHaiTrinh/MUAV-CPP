@@ -17,9 +17,8 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output", default="single.log", help="Output log file")
     args = parser.parse_args()
     logger = get_logger(args.output)
-    test_cases = setup(1, init_assign=True, init_uav_pos=True)
     for algo in args.algos:
-        for map_name, _map, _uavs in test_cases:
+        for map_name, _map, _uavs in setup(1, init_assign=True, init_uav_pos=True):
             uav = _uavs[0]
             planner = SingleCoveragePathPlannerFactory.get_planner(
                 "STC", _map, uav, mst_algo=algo

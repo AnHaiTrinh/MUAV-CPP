@@ -1,6 +1,8 @@
 import argparse
 import time
 
+import numpy as np
+
 from misc.benchmark._utils import setup, get_logger
 from src.planner.cpp.multi.planner import MultiCoveragePathPlannerFactory
 from src.planner.cpp.utils import map_to_assignment_matrix, get_assign_count
@@ -20,9 +22,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     logger = get_logger(args.output)
     for planner in args.planners:
-        for map_name, _map, _uavs in setup(
-            args.num_uavs, init_assign=True, init_uav_pos=True
-        ):
+        for map_name, _map, _uavs in setup(args.num_uavs):
             multi_planner = MultiCoveragePathPlannerFactory.get_planner(
                 planner, _uavs, _map
             )
@@ -30,7 +30,8 @@ if __name__ == "__main__":
             success = True
             try:
                 multi_planner.plan()
-            except Exception:
+            except Exception as exp:
+                print(exp)
                 success = False
             end = time.time()
 

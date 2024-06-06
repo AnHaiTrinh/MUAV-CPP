@@ -22,3 +22,8 @@ pip install -r dev.requirements.txt
 ```bash
 python main.py
 ```
+
+To run benchmark:
+```bash
+python -m misc.benchmark.[single|multi|handler|all]
+```

@@ -31,6 +31,11 @@ def setup(
     return tests
 
 
+@lru_cache
+def movements(num_change: int) -> list[tuple[int, bool]]:
+    return [(random.randint(1000, 2000), bool(random.randint(0, 1))) for _ in range(num_change)]
+
+
 def get_logger(fn: str):
     logger = logging.getLogger()
     logger.setLevel("INFO")

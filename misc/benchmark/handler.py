@@ -1,0 +1,53 @@
+import argparse
+import random
+import time
+
+from misc.benchmark._utils import setup, get_logger, movements
+from src.core.uav import uav_name_generator
+from src.planner.cpp.continuous.planner import ContinuousCoveragePathPlanner
+from src.planner.cpp.utils import map_to_assignment_matrix, get_assign_count
+
+random.seed(42069)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--handlers",
+        nargs="+",
+        default=["W_Transfer", "Redistribute"],
+        help="UAV change handler",
+    )
+    parser.add_argument("-o", "--output", default="handler.log", help="Output log file")
+    parser.add_argument("-n", "--num-uavs", default=8, type=int, help="Number of UAVS")
+    args = parser.parse_args()
+    logger = get_logger(args.output)
+    for handler in args.handlers:
+        for map_name, _map, _uavs in setup(args.num_uavs):
+            continuous_planner = ContinuousCoveragePathPlanner(_uavs, _map, multi_planner="Transfer", handler=handler)
+            success = True
+            continuous_planner.plan()
+
+            for i, (movement, add_new) in enumerate(movements(5)):
+                for _ in range(movement):
+                    for uav in _uavs:
+                        uav.move()
+                start = time.perf_counter()
+                if add_new:
+                    continuous_planner.handle_new_uav(uav_name_generator())
+                else:
+                    remove_uav = random.choice(_uavs)
+                    continuous_planner.handle_removed_uav(remove_uav.name)
+                end = time.perf_counter()
+                assigned = map_to_assignment_matrix(_map, _uavs)
+                assign_count = get_assign_count(assigned, len(_uavs))
+                logger.info(
+                    "%s,%d,%s,%s,%.4f,%s,%s",
+                    map_name,
+                    i + 1,
+                    handler,
+                    success,
+                    end - start,
+                    "|".join([f"{uav.trajectory_length:.4f}" for uav in _uavs]),
+                    "|".join([str(count) for count in assign_count]),
+                )

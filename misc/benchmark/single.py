@@ -24,12 +24,12 @@ if __name__ == "__main__":
                 "STC", _map, uav, mst_algo=algo
             )
             success = True
-            start = time.time()
+            start = time.perf_counter()
             try:
                 planner.plan()
             except Exception:
                 success = False
-            end = time.time()
+            end = time.perf_counter()
             logger.info(
                 "%s,%s,%s,%.4f,%.4f",
                 map_name,

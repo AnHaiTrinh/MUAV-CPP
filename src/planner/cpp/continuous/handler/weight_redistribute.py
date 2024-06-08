@@ -47,6 +47,8 @@ class WeightedRedistributeHandler(UAVChangeHandler):
         assigned[assigned == uav_index] = transfer_to
         assigned[assigned > uav_index] -= 1
 
+        if transfer_to > uav_index:
+            transfer_to -= 1
         self.uavs.remove(uav)
         self._transfer_top_down(assigned, transfer_to)
         self._reassign(assigned)

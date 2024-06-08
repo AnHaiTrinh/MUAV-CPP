@@ -22,12 +22,12 @@ class MultiCoveragePathPlanner(ABC):
         self.map = _map
 
         # Initialize the initial positions for uavs
+        uav_positions = [(uav.r, uav.c) for uav in self.uavs]
         for uav in uavs:
             while uav.r is None or uav.c is None:
                 free_cell = random.choice(self.map.free_cells)
-                for other_uav in self.uavs:
-                    if free_cell == (other_uav.r, other_uav.c):
-                        continue
+                if free_cell in uav_positions:
+                    continue
                 uav.r = free_cell.r
                 uav.c = free_cell.c
                 print(f"{uav.name} starts at {(uav.r, uav.c)}")

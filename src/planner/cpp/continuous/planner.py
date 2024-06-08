@@ -40,11 +40,11 @@ class ContinuousCoveragePathPlanner:
     def allocate_initial_uav_position(self, new_uav: UAV) -> None:
         if new_uav.r is not None and new_uav.c is not None:
             return
+        uav_positions = [(uav.r, uav.c) for uav in self.uavs]
         while True:
             free_cell = random.choice(self.map.free_cells)
-            for uav in self.uavs:
-                if free_cell == (uav.r, uav.c):
-                    continue
+            if free_cell in uav_positions:
+                continue
             new_uav.r = free_cell.r
             new_uav.c = free_cell.c
             print(f"{new_uav.name} starts at {(new_uav.r, new_uav.c)}")

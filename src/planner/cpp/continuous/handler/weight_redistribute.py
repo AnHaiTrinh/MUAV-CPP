@@ -14,6 +14,7 @@ from src.planner.cpp.utils import (
     get_assign_count,
     get_partition,
     get_neighbors,
+    get_adjacent_cells,
 )
 
 
@@ -91,7 +92,7 @@ class WeightedRedistributeHandler(UAVChangeHandler):
                     transfer_area_subtree(
                         v,
                         u,
-                        adj_list[v][u],
+                        get_adjacent_cells(assigned, v, u),
                         -transfer_amount,
                         assigned,
                         (self.uavs[v].r, self.uavs[v].c),  # type: ignore
@@ -100,7 +101,7 @@ class WeightedRedistributeHandler(UAVChangeHandler):
                     transfer_area_subtree(
                         u,
                         v,
-                        adj_list[u][v],
+                        get_adjacent_cells(assigned, u, v),
                         transfer_amount,
                         assigned,
                         (self.uavs[u].r, self.uavs[u].c),  # type: ignore
@@ -130,7 +131,7 @@ class WeightedRedistributeHandler(UAVChangeHandler):
                     transfer_area_subtree(
                         neigh,
                         node,
-                        adj_list[neigh][node],
+                        get_adjacent_cells(assigned, neigh, node),
                         -diff(neigh),
                         assigned,
                         (self.uavs[neigh].r, self.uavs[neigh].c),  # type: ignore
@@ -139,7 +140,7 @@ class WeightedRedistributeHandler(UAVChangeHandler):
                     transfer_area_subtree(
                         node,
                         neigh,
-                        adj_list[node][neigh],
+                        get_adjacent_cells(assigned, node, neigh),
                         transfer_amount,
                         assigned,
                         (self.uavs[node].r, self.uavs[node].c),  # type: ignore

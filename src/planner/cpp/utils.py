@@ -1,7 +1,6 @@
 import random
 from collections import defaultdict, deque
 from collections.abc import Iterable
-from itertools import cycle
 
 import numpy as np
 
@@ -25,7 +24,7 @@ def get_assign_count(assigned: np.ndarray, size: int) -> np.ndarray:
 
 def construct_adj_list(
     assigned: np.ndarray,
-) -> dict[int, dict[int, set[tuple[int, int]]]]:
+) -> dict[int, set[int]]:
     """
     Construct adjacency list for the assigned matrix.
     The assigned matrix is assumed to be labeled from 0 and occupied cells are labeled < 0.
@@ -35,9 +34,7 @@ def construct_adj_list(
     Edges: A set of cells adjacent to the other UAV
     """
     row, col = assigned.shape
-    adj_list: dict[int, dict[int, set[tuple[int, int]]]] = defaultdict(
-        lambda: defaultdict(set)
-    )
+    adj_list: dict[int, set[int]] = defaultdict(set)
     for r in range(row):
         for c in range(col):
             if assigned[r, c] < 0:
@@ -49,8 +46,8 @@ def construct_adj_list(
                     and 0 <= nc < col
                     and 0 < assigned[nr, nc] != assigned[r, c]
                 ):
-                    adj_list[assigned[r, c]][assigned[nr, nc]].add((r, c))  # type: ignore
-                    adj_list[assigned[nr, nc]][assigned[r, c]].add((nr, nc))  # type: ignore
+                    adj_list[assigned[r, c]].add(assigned[nr, nc])  # type: ignore
+                    adj_list[assigned[nr, nc]].add(assigned[r, c])  # type: ignore
     return adj_list
 
 
@@ -336,3 +333,19 @@ def get_neighbors(
             if 0 <= nr < row and 0 <= nc < col and 0 <= assigned[nr, nc] != label:
                 neighbors[assigned[nr, nc]].add((nr, nc))
     return neighbors
+
+
+def get_adjacent_cells(
+    assigned: np.ndarray, from_label: int, to_label: int
+) -> set[tuple[int, int]]:
+    row, col = assigned.shape
+    adjacent_cells = set()
+    for r in range(row):
+        for c in range(col):
+            if assigned[r, c] == from_label:
+                for dr, dc in _4_DIRS:
+                    nr, nc = r + dr, c + dc
+                    if 0 <= nr < row and 0 <= nc < col and assigned[nr, nc] == to_label:
+                        adjacent_cells.add((r, c))
+                        break
+    return adjacent_cells

@@ -1,7 +1,6 @@
 import os
 import logging
 import random
-from functools import lru_cache
 
 from src.core.map import Map
 from src.core.uav import UAV
@@ -11,7 +10,6 @@ random.seed(42069)
 IMAGES_DIR = "images_filled/"
 
 
-@lru_cache
 def setup(
     num_uavs: int, init_uav_pos: bool = False, init_assign: bool = False
 ) -> list[tuple[str, Map, list[UAV]]]:
@@ -31,7 +29,6 @@ def setup(
     return tests
 
 
-@lru_cache
 def movements(num_change: int) -> list[tuple[int, bool]]:
     return [(random.randint(1000, 2000), bool(random.randint(0, 1))) for _ in range(num_change)]
 

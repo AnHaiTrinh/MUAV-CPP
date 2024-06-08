@@ -19,8 +19,9 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--num-uavs", default=8, type=int, help="Number of UAVS")
     args = parser.parse_args()
     logger = get_logger(args.output)
+    test_cases = setup(args.num_uavs)
     for planner in args.planners:
-        for map_name, _map, _uavs in setup(args.num_uavs):
+        for map_name, _map, _uavs in test_cases:
             multi_planner = MultiCoveragePathPlannerFactory.get_planner(
                 planner, _uavs, _map
             )

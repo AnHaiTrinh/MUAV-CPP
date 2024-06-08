@@ -20,15 +20,18 @@ if __name__ == "__main__":
     )
     parser.add_argument("-o", "--output", default="handler.log", help="Output log file")
     parser.add_argument("-n", "--num-uavs", default=8, type=int, help="Number of UAVS")
+    parser.add_argument("-c", "--change", default=5, type=int, help="Number of changes")
     args = parser.parse_args()
     logger = get_logger(args.output)
+    test_cases = setup(args.num_uavs)
+    moves = movements(args.change)
     for handler in args.handlers:
-        for map_name, _map, _uavs in setup(args.num_uavs):
+        for map_name, _map, _uavs in test_cases:
             continuous_planner = ContinuousCoveragePathPlanner(_uavs, _map, multi_planner="Transfer", handler=handler)
             success = True
             continuous_planner.plan()
 
-            for i, (movement, add_new) in enumerate(movements(5)):
+            for i, (movement, add_new) in enumerate(moves):
                 for _ in range(movement):
                     for uav in _uavs:
                         uav.move()

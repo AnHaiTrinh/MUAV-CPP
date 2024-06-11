@@ -1,6 +1,8 @@
 import os
 import logging
 import random
+import time
+from collections.abc import Callable
 
 from src.core.map import Map
 from src.core.uav import UAV
@@ -30,7 +32,10 @@ def setup(
 
 
 def movements(num_change: int) -> list[tuple[int, bool]]:
-    return [(random.randint(1000, 2000), bool(random.randint(0, 1))) for _ in range(num_change)]
+    return [
+        (random.randint(1000, 2000), bool(random.randint(0, 1)))
+        for _ in range(num_change)
+    ]
 
 
 def get_logger(fn: str):
@@ -40,3 +45,15 @@ def get_logger(fn: str):
     handler.setFormatter(logging.Formatter("%(message)s"))
     logger.addHandler(handler)
     return logger
+
+
+def time_func(func: Callable, *args) -> tuple[float, bool]:
+    success = True
+    start = time.perf_counter()
+    try:
+        func(*args)
+    except Exception as exp:
+        print(exp)
+        success = False
+    end = time.perf_counter()
+    return end - start, success

@@ -1,7 +1,6 @@
 import argparse
-import time
 
-from misc.benchmark._utils import setup, get_logger
+from misc.benchmark._utils import setup, get_logger, time_func
 from src.planner.cpp.single.planner import SingleCoveragePathPlannerFactory
 
 
@@ -24,18 +23,13 @@ if __name__ == "__main__":
             planner = SingleCoveragePathPlannerFactory.get_planner(
                 "STC", _map, uav, mst_algo=algo
             )
-            success = True
-            start = time.perf_counter()
-            try:
-                planner.plan()
-            except Exception:
-                success = False
-            end = time.perf_counter()
+            coverage_time, success = time_func(planner.plan)
+
             logger.info(
                 "%s,%s,%s,%.4f,%.4f",
                 map_name,
                 algo,
                 success,
-                end - start,
+                coverage_time,
                 uav.trajectory_length,
             )

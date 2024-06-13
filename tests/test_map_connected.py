@@ -20,6 +20,7 @@ for img in os.listdir(images_root):
         )
         planner.plan()
         trajectory = uav.trajectory
+        assert trajectory is not None, "Trajectory is not set"
         n = len(trajectory)
         trajectory_cells = set(cell.coordinate for cell in trajectory)
         assert all(

@@ -89,7 +89,7 @@ class STCPlanner(SingleCoveragePathPlanner):
             return not (neighbor_mega_cell in adj_list[current_mega_cell])
 
         current_pos = start_pos
-        last_dir = (1, 0)
+        is_symmetric = False
         stop = False
         while not stop:
             stop = True
@@ -98,61 +98,33 @@ class STCPlanner(SingleCoveragePathPlanner):
                     next_pos = (current_pos[0] + d[0], current_pos[1] + d[1])
                     visited.add(next_pos)
                     last_coverage_pos = coverage_path[-1]
-                    if last_coverage_pos == current_pos:
-                        if self.area.get_cell(*next_pos).cell_type == CellType.FREE:
-                            coverage_path.append(next_pos)
-                        else:
-                            symmetric_next_pos = self._symmetric_cell(next_pos, d)
-                            if (
-                                self.area.get_cell(*symmetric_next_pos).cell_type
-                                == CellType.FREE
-                            ):
-                                coverage_path.append(symmetric_next_pos)
-                    else:
-                        if last_coverage_pos == self._symmetric_cell(current_pos, d):
+                    if is_symmetric or last_coverage_pos == current_pos:
+                        if self._cell_to_mega_cell(
+                                current_pos
+                        ) == self._cell_to_mega_cell(next_pos):
                             if self.area.get_cell(*next_pos).cell_type == CellType.FREE:
                                 coverage_path.append(next_pos)
+                                is_symmetric = False
                             else:
-                                next_coverage_pos = (
-                                    last_coverage_pos[0] + d[0],
-                                    last_coverage_pos[1] + d[1],
-                                )
+                                symmetric_cell = self._symmetric_cell(next_pos, d)
                                 if (
-                                    self.area.get_cell(*next_coverage_pos).cell_type
-                                    == CellType.FREE
-                                ):
-                                    coverage_path.append(next_coverage_pos)
-                        elif last_coverage_pos == self._symmetric_cell(
-                            current_pos, last_dir
-                        ):
-                            if next_pos != last_coverage_pos:
-                                next_coverage_pos = (
-                                    current_pos[0] + last_dir[0],
-                                    current_pos[1] + last_dir[1],
-                                )
-                                if (
-                                    self.area.get_cell(*next_coverage_pos).cell_type
-                                    == CellType.FREE
-                                ):
-                                    coverage_path.append(next_coverage_pos)
-                                if (
-                                    self.area.get_cell(*next_pos).cell_type
-                                    == CellType.FREE
-                                ):
-                                    coverage_path.append(next_pos)
-                                else:
-                                    symmetric_next_pos = self._symmetric_cell(
-                                        next_pos, d
-                                    )
-                                    if (
-                                        self.area.get_cell(
-                                            *symmetric_next_pos
-                                        ).cell_type
+                                        self.area.get_cell(*symmetric_cell).cell_type
                                         == CellType.FREE
-                                    ):
-                                        coverage_path.append(symmetric_next_pos)
+                                ):
+                                    coverage_path.append(symmetric_cell)
+                                is_symmetric = True
+                        else:
+                            symmetric_cell = self._symmetric_cell(current_pos, d)
+                            if is_symmetric and symmetric_cell != last_coverage_pos:
+                                coverage_path.append(symmetric_cell)
+                            if self.area.get_cell(*next_pos).cell_type == CellType.FREE:
+                                coverage_path.append(next_pos)
+                                is_symmetric = False
+                            else:
+                                coverage_path.append(self._symmetric_cell(next_pos, d))
+                                is_symmetric = True
+
                     current_pos = next_pos
-                    last_dir = d
                     stop = False
                     break
 

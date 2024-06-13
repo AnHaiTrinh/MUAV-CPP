@@ -81,9 +81,8 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
             assigned[r, c] = label
             for dr, dc in _DIRS:
                 nr, nc = r + dr, c + dc
-                if 0 <= nr < row and 0 <= nc < col:
-                    if assigned[nr, nc] == 0:
-                        q.append(((nr, nc), label))
+                if 0 <= nr < row and 0 <= nc < col and assigned[nr, nc] == 0:
+                    q.append(((nr, nc), label))
 
         return assigned - 1
 

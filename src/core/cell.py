@@ -21,7 +21,7 @@ class Cell:
     def coordinate(self) -> tuple[int, int]:
         return self.r, self.c
 
-    def distance(self, other: "Cell") -> float:
+    def distance(self, other: "Cell") -> np.float64:
         return np.sqrt(np.square(self.c - other.c) + np.square(self.r - other.r))
 
     def __repr__(self):

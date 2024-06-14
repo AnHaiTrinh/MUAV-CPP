@@ -5,12 +5,13 @@ from src.planner.cpp.single.planner import SingleCoveragePathPlannerFactory
 from src.core.uav import UAV
 from src.core.utils import load_map_from_text_file
 
+_base_dir = os.path.dirname(__file__)
 test_suite = [
-    (os.path.join("resources", "stc_dense.txt"), 40.0),
-    (os.path.join("resources", "stc_sparse.txt"), 52.0),
-    (os.path.join("resources", "stc_non_homogeneous.txt"), 41.66),
-    (os.path.join("resources", "stc_bipartite.txt"), 52.83),
-    (os.path.join("resources", "stc_narrow.txt"), 60.83),
+    (os.path.join(_base_dir, "resources", "stc_dense.txt"), 40.0),
+    (os.path.join(_base_dir, "resources", "stc_sparse.txt"), 52.0),
+    (os.path.join(_base_dir, "resources", "stc_non_homogeneous.txt"), 41.66),
+    (os.path.join(_base_dir, "resources", "stc_bipartite.txt"), 52.83),
+    (os.path.join(_base_dir, "resources", "stc_narrow.txt"), 60.83),
 ]
 
 

@@ -24,7 +24,8 @@ for img in os.listdir(images_root):
         n = len(trajectory)
         trajectory_cells = set(cell.coordinate for cell in trajectory)
         assert all(
-            trajectory[i].coordinate in trajectory_cells for i in range(n)
+            free_cell.coordinate in trajectory_cells
+            for free_cell in test_map.free_cells
         ), "Not complete coverage"
 
         for i in range(n):
@@ -38,5 +39,5 @@ for img in os.listdir(images_root):
         print(f"Failed to run: {err.args[0]}")
         continue
     except AssertionError as exp:
-        print(f"Invalid trajectory for {img}: {exp.args[0]}")
+        print(f"Invalid trajectory: {exp.args[0]}")
         continue

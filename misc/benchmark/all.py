@@ -1,6 +1,5 @@
 import argparse
 import random
-import time
 
 from misc.benchmark._utils import get_logger, movements, setup, time_func
 from src.core.uav import uav_name_generator
@@ -32,10 +31,11 @@ if __name__ == "__main__":
         assigned = map_to_assignment_matrix(_map, _uavs)
         assign_count = get_assign_count(assigned, len(_uavs))
         logger.info(
-            "%s,%d,%s,%s,%.4f,%s,%s",
+            "%s,%d,%s,%s,%s,%.4f,%s,%s",
             map_name,
             0,
             planner,
+            handler,
             success,
             init_plan_time,
             "|".join([f"{uav.trajectory_length:.4f}" for uav in _uavs]),
@@ -58,12 +58,15 @@ if __name__ == "__main__":
             assigned = map_to_assignment_matrix(_map, _uavs)
             assign_count = get_assign_count(assigned, len(_uavs))
             logger.info(
-                "%s,%d,%s,%s,%.4f,%s,%s",
+                "%s,%d,%s,%s,%s,%.4f,%s,%s",
                 map_name,
                 i + 1,
+                planner,
                 handler,
                 success,
                 replan_time,
                 "|".join([f"{uav.trajectory_length:.4f}" for uav in _uavs]),
                 "|".join([str(count) for count in assign_count]),
             )
+            if not success:
+                break

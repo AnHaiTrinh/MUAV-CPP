@@ -25,7 +25,6 @@ class WeightedRedistributeHandler(UAVChangeHandler):
         super().__init__(uavs, _map, **kwargs)
 
         self.single_planner_name = kwargs.get("single_planner_name", "STC")
-        self.max_iter = kwargs.get("max_iter", 100)
 
     def handle_new_uav(self, uav: UAV):
         assigned = map_to_assignment_matrix(self.map, self.uavs)
@@ -132,7 +131,7 @@ class WeightedRedistributeHandler(UAVChangeHandler):
                         neigh,
                         node,
                         get_adjacent_cells(assigned, neigh, node),
-                        -diff(neigh),
+                        -transfer_amount,
                         assigned,
                         (self.uavs[neigh].r, self.uavs[neigh].c),  # type: ignore
                     )

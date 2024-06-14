@@ -30,8 +30,6 @@ def construct_adj_list(
     The assigned matrix is assumed to be labeled from 0 and occupied cells are labeled < 0.
     :param assigned: assignment matrix
     :return: adjacency list of UAVs
-    Vertices: UAVs
-    Edges: A set of cells adjacent to the other UAV
     """
     row, col = assigned.shape
     adj_list: dict[int, set[int]] = defaultdict(set)
@@ -254,6 +252,79 @@ def _dfs_subtree(mat: np.ndarray, root: tuple[int, int]) -> list[set[tuple[int, 
                 stack.append(((_nr, _nc), subtree))
 
     return [subtree for subtree in subtrees if subtree]
+
+
+def transfer_concurrently(
+    from_node: int,
+    to_nodes: dict[int, int],
+    assigned: np.ndarray,
+    from_node_init_pos: tuple[int, int] | None,
+) -> None:
+    """
+    Concurrently transfer from node to all of `to_nodes`.
+    :param from_node: Node to tranfer area from
+    :param to_nodes: Dict of nodes to transfer area to. Value is their desired transfer amount
+    :param assigned: Assignment matrix
+    :param from_node_init_pos: The initial position of `from_node` to avoid. If None then take all of its area.
+    """
+    row, col = assigned.shape
+    transferred = {node: 0 for node in to_nodes}
+    queues = {
+        node: deque(get_adjacent_cells(assigned, from_node, node)) for node in to_nodes
+    }
+    while queues:
+        for node in to_nodes:
+            if node not in queues:
+                continue
+            if from_node_init_pos is None and len(queues) == 1:
+                assigned[assigned == from_node] = node
+                del queues[node]
+                break
+            q = queues[node]
+            while q:
+                r, c = q.popleft()
+                if (r, c) == from_node_init_pos or assigned[r, c] != from_node:
+                    continue
+                if _is_not_bridge(assigned, (r, c)):
+                    assigned[r, c] = node
+                    transferred[node] += 1
+                    for dr, dc in _4_DIRS:
+                        nr, nc = r + dr, c + dc
+                        if (
+                            0 <= nr < row
+                            and 0 <= nc < col
+                            and assigned[nr, nc] == from_node
+                        ):
+                            q.append((nr, nc))
+                    break
+                else:
+                    subtrees = _dfs_subtree(assigned, (r, c))
+                    transfer_subtrees = list(
+                        filter(lambda x: from_node_init_pos not in x, subtrees)
+                    )
+                    if (
+                        sum(len(subtree) for subtree in transfer_subtrees)
+                        >= to_nodes[node] - transferred[node]
+                    ):
+                        continue
+                    assigned[r, c] = node
+                    transferred[node] += 1
+                    for subtree in transfer_subtrees:
+                        for cr, cc in subtree:
+                            assigned[cr, cc] = node
+                            transferred[node] += 1
+                            for cdr, cdc in _4_DIRS:
+                                cnr, cnc = cr + cdr, cc + cdc
+                                if (
+                                    0 <= cnr < row
+                                    and 0 <= cnc < col
+                                    and assigned[cnr, cnc] == from_node
+                                ):
+                                    q.append((cnr, cnc))
+                    break
+
+            if transferred[node] >= to_nodes[node] or not q:
+                del queues[node]
 
 
 def dfs_weighted_tree(

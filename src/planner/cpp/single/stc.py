@@ -100,7 +100,7 @@ class STCPlanner(SingleCoveragePathPlanner):
                     last_coverage_pos = coverage_path[-1]
                     if is_symmetric or last_coverage_pos == current_pos:
                         if self._cell_to_mega_cell(
-                                current_pos
+                            current_pos
                         ) == self._cell_to_mega_cell(next_pos):
                             if self.area.get_cell(*next_pos).cell_type == CellType.FREE:
                                 coverage_path.append(next_pos)
@@ -108,8 +108,8 @@ class STCPlanner(SingleCoveragePathPlanner):
                             else:
                                 symmetric_cell = self._symmetric_cell(next_pos, d)
                                 if (
-                                        self.area.get_cell(*symmetric_cell).cell_type
-                                        == CellType.FREE
+                                    self.area.get_cell(*symmetric_cell).cell_type
+                                    == CellType.FREE
                                 ):
                                     coverage_path.append(symmetric_cell)
                                 is_symmetric = True

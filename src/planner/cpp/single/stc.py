@@ -129,7 +129,7 @@ class STCPlanner(SingleCoveragePathPlanner):
                     break
 
         coverage_trajectory = [
-            self.area.get_cell(*pos) for pos in _deduplicate_path(coverage_path)
+            self.area.get_cell(*pos) for pos in coverage_path
         ]
         self.uav.update_trajectory(coverage_trajectory)
 
@@ -367,16 +367,3 @@ class STCPlanner(SingleCoveragePathPlanner):
                 return self._top_right(mega_cell).coordinate
 
         raise ValueError(f"Invalid cell {cell} and direction {direction}")
-
-
-def _deduplicate_path(path: list[tuple[int, int]]) -> list[tuple[int, int]]:
-    """
-    Deduplicate the path by removing the consecutive duplicate cells
-    :param path: The path to deduplicate
-    :return: The deduplicated path
-    """
-    deduplicated_path = [path[0]]
-    for i in range(1, len(path)):
-        if path[i] != path[i - 1]:
-            deduplicated_path.append(path[i])
-    return deduplicated_path

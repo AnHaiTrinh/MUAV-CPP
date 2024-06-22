@@ -108,8 +108,8 @@ def _is_connected(
 
 
 def transfer_area(
-    seller: int,
-    buyer: int,
+    sender: int,
+    receiver: int,
     neighbors: set[tuple[int, int]],
     transfer_amount: int,
     assigned: np.ndarray,
@@ -117,8 +117,8 @@ def transfer_area(
 ) -> int:
     """
     Transfer cells from seller to buyer.
-    :param seller: The seller node (losing area)
-    :param buyer: The buyer node (gaining area)
+    :param sender: The sending node (losing area)
+    :param receiver: The receiving node (gaining area)
     :param neighbors: The cells belonging to the seller node adjacent to the buyer node
     :param transfer_amount: The ideal amount of cells to transfer
     :param assigned: The assignment matrix
@@ -148,20 +148,20 @@ def transfer_area(
         r, c = queue.popleft()
         if (r, c) == init_seller_pos:
             continue
-        if strongly_connected((r, c), buyer) and _is_not_bridge(assigned, (r, c)):
-            assigned[r, c] = buyer
+        if strongly_connected((r, c), receiver) and _is_not_bridge(assigned, (r, c)):
+            assigned[r, c] = receiver
             transferred += 1
             for dr, dc in _4_DIRS:
                 nr, nc = r + dr, c + dc
-                if 0 <= nr < row and 0 <= nc < col and assigned[nr, nc] == seller:
+                if 0 <= nr < row and 0 <= nc < col and assigned[nr, nc] == sender:
                     queue.append((nr, nc))
 
     return transferred
 
 
 def transfer_area_subtree(
-    seller: int,
-    buyer: int,
+    sender: int,
+    receiver: int,
     neighbors: set[tuple[int, int]],
     transfer_amount: int,
     assigned: np.ndarray,
@@ -169,8 +169,8 @@ def transfer_area_subtree(
 ) -> int:
     """
     Transfer cells from seller to buyer.
-    :param seller: The seller node (losing area)
-    :param buyer: The buyer node (gaining area)
+    :param sender: The sending node (losing area)
+    :param receiver: The receiving node (gaining area)
     :param neighbors: The cells belonging to the seller node adjacent to the buyer node
     :param transfer_amount: The ideal amount of cells to transfer
     :param assigned: The assignment matrix
@@ -182,14 +182,14 @@ def transfer_area_subtree(
     queue = deque(neighbors)
     while queue and transfer_amount > transferred:
         r, c = queue.popleft()
-        if assigned[r, c] != seller or (r, c) == init_seller_pos:
+        if assigned[r, c] != sender or (r, c) == init_seller_pos:
             continue
         if _is_not_bridge(assigned, (r, c)):
-            assigned[r, c] = buyer
+            assigned[r, c] = receiver
             transferred += 1
             for dr, dc in _4_DIRS:
                 nr, nc = r + dr, c + dc
-                if 0 <= nr < row and 0 <= nc < col and assigned[nr, nc] == seller:
+                if 0 <= nr < row and 0 <= nc < col and assigned[nr, nc] == sender:
                     queue.append((nr, nc))
         else:
             subtrees = _dfs_subtree(assigned, (r, c))
@@ -201,18 +201,18 @@ def transfer_area_subtree(
                 >= transfer_amount - transferred
             ):
                 continue
-            assigned[r, c] = buyer
+            assigned[r, c] = receiver
             transferred += 1
             for subtree in transfer_subtrees:
                 for cr, cc in subtree:
-                    assigned[cr, cc] = buyer
+                    assigned[cr, cc] = receiver
                     transferred += 1
                     for cdr, cdc in _4_DIRS:
                         cnr, cnc = cr + cdr, cc + cdc
                         if (
                             0 <= cnr < row
                             and 0 <= cnc < col
-                            and assigned[cnr, cnc] == seller
+                            and assigned[cnr, cnc] == sender
                         ):
                             queue.append((cnr, cnc))
 

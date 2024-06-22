@@ -26,21 +26,19 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
         # equal = False
         iteration = 0
         while iteration < self.max_iter:  # and (not equal)
-            # equal = True
             partition = get_partition(self.assigned, self.num_uavs)
 
-            # for node in sorted(range(self.num_uavs), key=lambda x: len(partition[x])):
             node = next(self.uav_iter)
             neighbors = get_neighbors(self.assigned, partition[node])
             for target_node in sorted(
                 neighbors, key=lambda x: len(partition[x]), reverse=True
             ):
-                buyer = len(partition[node])
-                if buyer > self.target_cell_count:
+                receiver_count = len(partition[node])
+                if receiver_count > self.target_cell_count:
                     continue
-                seller = len(partition[target_node])
-                diff = seller - buyer
-                if diff < 1 or (diff == 1 and seller == self.target_cell_count + 1):
+                sender_count = len(partition[target_node])
+                diff = sender_count - receiver_count
+                if diff < 1 or (diff == 1 and sender_count == self.target_cell_count + 1):
                     continue
 
                 to_transfer = (diff + 1) >> 1
@@ -56,11 +54,7 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
                 if not transferred:
                     continue
 
-                # equal = False
                 break
-
-            # if not equal:
-            #     break
 
             iteration += 1
 

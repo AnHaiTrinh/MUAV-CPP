@@ -19,17 +19,18 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
         self.assigned = self._initial_assign()
 
         self.single_planner_name = kwargs.get("single_planner_name", "STC")
-        self.max_iter = kwargs.get("max_iter", 100)
+        self.max_iter = kwargs.get("max_iter", 50)
         self.uav_iter = cycle(range(len(self.uavs)))
+        self.consecutive_failures = 0
 
     def assign(self) -> np.ndarray:
-        # equal = False
         iteration = 0
-        while iteration < self.max_iter:  # and (not equal)
+        while iteration < self.max_iter:
             partition = get_partition(self.assigned, self.num_uavs)
 
             node = next(self.uav_iter)
             neighbors = get_neighbors(self.assigned, partition[node])
+            success = False
             for target_node in sorted(
                 neighbors, key=lambda x: len(partition[x]), reverse=True
             ):
@@ -51,11 +52,16 @@ class AreaTransferringPlanner(MultiAsSingleCoveragePathPlanner):
                     self.assigned,
                     init_pos,  # type: ignore
                 )
-                if not transferred:
-                    continue
+                if transferred:
+                    success = True
+                    break
 
-                break
-
+            if not success:
+                self.consecutive_failures += 1
+                if self.consecutive_failures >= self.num_uavs:
+                    break
+            else:
+                self.consecutive_failures = 0
             iteration += 1
 
         return self.assigned

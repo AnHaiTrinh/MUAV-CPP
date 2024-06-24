@@ -87,6 +87,20 @@ class MapComponent(Component):
 
     def _draw_uav_trajectories(self):
         for uav in self.uavs:
+            # Draw UAV
+            if uav.r is None or uav.c is None:
+                raise ValueError("UAV position is None")
+
+            # pygame.draw.circle(
+            #     self.surface,
+            #     colors.RED,
+            #     (
+            #         int((uav.c + 0.5) * self.cell_width),
+            #         int((uav.r + 0.5) * self.cell_height),
+            #     ),
+            #     min(self.cell_width, self.cell_height),
+            # )
+
             # # Draw movement
             # movement = uav.movement
             # if movement is None:
@@ -106,16 +120,21 @@ class MapComponent(Component):
             #         ),
             #     )
 
-            # Draw UAV
-            if uav.r is None or uav.c is None:
-                raise ValueError("UAV position is None")
-
-            pygame.draw.circle(
-                self.surface,
-                colors.RED,
-                (
-                    int((uav.c + 0.5) * self.cell_width),
-                    int((uav.r + 0.5) * self.cell_height),
-                ),
-                min(self.cell_width, self.cell_height),
-            )
+            # # Draw trajectory
+            # trajectory = uav.trajectory
+            # if trajectory is None:
+            #     raise ValueError("UAV trajectory is None")
+            # n = len(trajectory)
+            # for i in range(n):
+            #     pygame.draw.line(
+            #         self.surface,
+            #         uav.color,
+            #         (
+            #             (trajectory[i].c + 0.5) * self.cell_width,
+            #             (trajectory[i].r + 0.5) * self.cell_height,
+            #         ),
+            #         (
+            #             (trajectory[(i + 1) % n].c + 0.5) * self.cell_width,
+            #             (trajectory[(i + 1) % n].r + 0.5) * self.cell_height,
+            #         ),
+            #     )

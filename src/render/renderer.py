@@ -223,18 +223,18 @@ class Renderer(ComposableComponent):
             self._create_uav_panel()
 
     def _handle_run(self):
-        if not self.planner:
-            self.planner = ContinuousCoveragePathPlanner(
-                self.uavs,
-                self.map_component.get_map(),
-                multi_planner=self.planner_dropdown.get_selected(),
-                handler=self.handler_dropdown.get_selected(),
-            )
-            self.planner.plan()
+        # if not self.planner:
+        #     self.planner = ContinuousCoveragePathPlanner(
+        #         self.uavs,
+        #         self.map_component.get_map(),
+        #         multi_planner=self.planner_dropdown.get_selected(),
+        #         handler=self.handler_dropdown.get_selected(),
+        #     )
+        #     self.planner.plan()
 
         if not self.map_component.uavs:
             self.map_component.set_uavs(self.uavs)
             self._create_uav_panel()
-
-        for uav in self.uavs:
-            uav.move()
+        #
+        # for uav in self.uavs:
+        #     uav.move()

@@ -2,6 +2,8 @@ from collections import deque
 
 import numpy as np
 
+from misc.viz_map_assignee import save_uavs_and_map_info
+
 from src.core.map import Map
 from src.core.uav import UAV
 from src.planner.cpp.continuous.handler.base import UAVChangeHandler
@@ -76,6 +78,8 @@ class WeightedRedistributeHandler(UAVChangeHandler):
         assign_count = get_assign_count(assigned, num_uavs)
 
         tree_adj_list, weights = dfs_weighted_tree(adj_list, assign_count, changed_uav_idx)  # type: ignore
+        counter = 0
+        save_uavs_and_map_info(self.uavs, assigned, f"remove_{counter}.json")
 
         def diff(node: int) -> int:
             count, weight = weights[node]
@@ -106,6 +110,9 @@ class WeightedRedistributeHandler(UAVChangeHandler):
                         (self.uavs[u].r, self.uavs[u].c),  # type: ignore
                     )
                 q.append(v)
+                counter += 1
+                print(counter)
+                save_uavs_and_map_info(self.uavs, assigned, f"remove_{counter}.json")
 
     def _transfer_bottom_up(self, assigned: np.ndarray, changed_uav_idx: int) -> None:
         """Modify `assigned` inplace"""
@@ -121,6 +128,9 @@ class WeightedRedistributeHandler(UAVChangeHandler):
             count, weight = weights[node]
             nonlocal target_cell_count
             return round(target_cell_count * count) - weight
+
+        counter = 0
+        save_uavs_and_map_info(self.uavs, assigned, f"add_{counter}.json")
 
         def handle(node: int):
             for neigh in sorted(tree_adj_list[node], key=diff):
@@ -144,5 +154,8 @@ class WeightedRedistributeHandler(UAVChangeHandler):
                         assigned,
                         (self.uavs[node].r, self.uavs[node].c),  # type: ignore
                     )
+            nonlocal counter
+            counter += 1
+            save_uavs_and_map_info(self.uavs, assigned, f"add_{node}.json")
 
         handle(changed_uav_idx)

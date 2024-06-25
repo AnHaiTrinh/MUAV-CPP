@@ -91,15 +91,15 @@ class MapComponent(Component):
             if uav.r is None or uav.c is None:
                 raise ValueError("UAV position is None")
 
-            # pygame.draw.circle(
-            #     self.surface,
-            #     colors.RED,
-            #     (
-            #         int((uav.c + 0.5) * self.cell_width),
-            #         int((uav.r + 0.5) * self.cell_height),
-            #     ),
-            #     min(self.cell_width, self.cell_height),
-            # )
+            pygame.draw.circle(
+                self.surface,
+                colors.RED,
+                (
+                    int((uav.c + 0.5) * self.cell_width),
+                    int((uav.r + 0.5) * self.cell_height),
+                ),
+                min(self.cell_width, self.cell_height),
+            )
 
             # # Draw movement
             # movement = uav.movement

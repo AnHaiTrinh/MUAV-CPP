@@ -14,7 +14,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--handlers",
         nargs="+",
-        default=["W_Transfer", "Redistribute", "W_Reassign"],
+        default=["W_Transfer", "Redistribute", "Propagation"],
         help="UAV change handler",
     )
     parser.add_argument("-o", "--output", default="handler.log", help="Output log file")

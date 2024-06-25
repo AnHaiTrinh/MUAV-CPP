@@ -17,8 +17,8 @@ from src.planner.cpp.utils import (
 )
 
 
-class WeightedReassignHandler(UAVChangeHandler):
-    name = "W_Reassign"
+class PropagationHandler(UAVChangeHandler):
+    name = "Propagation"
 
     def __init__(self, uavs: list[UAV], _map: Map, **kwargs):
         super().__init__(uavs, _map, **kwargs)

@@ -111,7 +111,6 @@ class WeightedRedistributeHandler(UAVChangeHandler):
                     )
                 q.append(v)
                 counter += 1
-                print(counter)
                 save_uavs_and_map_info(self.uavs, assigned, f"remove_{counter}.json")
 
     def _transfer_bottom_up(self, assigned: np.ndarray, changed_uav_idx: int) -> None:
@@ -154,8 +153,8 @@ class WeightedRedistributeHandler(UAVChangeHandler):
                         assigned,
                         (self.uavs[node].r, self.uavs[node].c),  # type: ignore
                     )
-            nonlocal counter
-            counter += 1
-            save_uavs_and_map_info(self.uavs, assigned, f"add_{node}.json")
+                nonlocal counter
+                counter += 1
+                save_uavs_and_map_info(self.uavs, assigned, f"add_{counter}.json")
 
         handle(changed_uav_idx)

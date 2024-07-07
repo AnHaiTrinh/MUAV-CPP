@@ -86,7 +86,7 @@ class Renderer(ComposableComponent):
             AnnotatedComponent(self.remove_uav_slider, "Remove UAV Probability"),
         )
 
-        self.uavs = [UAV() for _ in range(num_uavs)]
+        self.uavs = [UAV(r=0, c=0) for _ in range(num_uavs)]
         self._create_uav_panel()
 
         self.add_event_handler(self._handle_uav_change)
@@ -206,9 +206,11 @@ class Renderer(ComposableComponent):
                 single_planner="STC",
             )
 
-        if not self.map_component.uavs:
+        if not self.map_component.adj_list:
             self.map_component.set_uavs(self.uavs)
+            self.map_component.adj_list = self.planner.single_planner._dfs((self.uavs[0].r, self.uavs[0].c))
+            self.planner.single_planner.plan()
             self._create_uav_panel()
 
-        for uav in self.uavs:
-            uav.move()
+        # for uav in self.uavs:
+        #     uav.move()

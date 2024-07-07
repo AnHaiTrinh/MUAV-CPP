@@ -48,7 +48,7 @@ class STCPlanner(SingleCoveragePathPlanner):
         coverage_path: list[tuple[int, int]] = [start_pos]
         visited: set[tuple[int, int]] = {start_pos}
 
-        adj_list = self._kruskal(start_pos)
+        adj_list = self._dfs(start_pos)
 
         def is_valid_movement(
             current: tuple[int, int],
@@ -103,6 +103,7 @@ class STCPlanner(SingleCoveragePathPlanner):
                 if is_valid_movement(current_pos, d):
                     next_pos = (current_pos[0] + d[0], current_pos[1] + d[1])
                     visited.add(next_pos)
+                    # coverage_path.append(next_pos)
                     last_coverage_pos = coverage_path[-1]
                     if last_coverage_pos == current_pos:
                         if self.area.get_cell(*next_pos).cell_type == CellType.FREE:
@@ -158,7 +159,7 @@ class STCPlanner(SingleCoveragePathPlanner):
                                     ):
                                         coverage_path.append(symmetric_next_pos)
                     current_pos = next_pos
-                    last_dir = d
+                    # last_dir = d
                     stop = False
                     break
 

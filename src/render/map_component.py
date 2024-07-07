@@ -26,9 +26,11 @@ class MapComponent(Component):
         self.add_event_handler(self.click_handler)
 
         self.uavs: list[UAV] = []
+        self.adj_list = {}
 
     def render(self) -> None:
         self._draw_map()
+        self._draw_stc()
         self._draw_uav_trajectories()
 
     def click_handler(self, event: pygame.event.Event) -> None:
@@ -84,27 +86,79 @@ class MapComponent(Component):
             for j in range(length):
                 pygame.draw.line(
                     self.surface,
-                    uav.color,
+                    colors.GREEN,
                     (
-                        (trajectory[j].c + 0.5) * self.cell_width,
-                        (trajectory[j].r + 0.5) * self.cell_height,
+                        (trajectory[j].c + 0.5) * self.cell_width + 2 * (trajectory[j].c - trajectory[(j + 1) % length].c),
+                        (trajectory[j].r + 0.5) * self.cell_height + 2 * (trajectory[j].r - trajectory[(j + 1) % length].r)
                     ),
                     (
-                        (trajectory[(j + 1) % length].c + 0.5) * self.cell_width,
-                        (trajectory[(j + 1) % length].r + 0.5) * self.cell_height,
+                        (trajectory[(j + 1) % length].c + 0.5) * self.cell_width + 2*(trajectory[(j + 1) % length].c - trajectory[j].c),
+                        (trajectory[(j + 1) % length].r + 0.5) * self.cell_height + 2*(trajectory[(j + 1) % length].r - trajectory[j].r),
                     ),
+                    5
                 )
 
             # Draw UAV
-            if uav.r is None or uav.c is None:
-                raise ValueError("UAV position is None")
+            # if uav.r is None or uav.c is None:
+            #     raise ValueError("UAV position is None")
+            #
+            # pygame.draw.circle(
+            #     self.surface,
+            #     uav.color,
+            #     (
+            #         int((uav.c + 0.5) * self.cell_width),
+            #         int((uav.r + 0.5) * self.cell_height),
+            #     ),
+            #     min(self.cell_width, self.cell_height) // 2,
+            # )
 
-            pygame.draw.circle(
+    def _draw_stc(self):
+        for i in range(0, self._map.height):
+            pygame.draw.line(
                 self.surface,
-                uav.color,
-                (
-                    int((uav.c + 0.5) * self.cell_width),
-                    int((uav.r + 0.5) * self.cell_height),
-                ),
-                min(self.cell_width, self.cell_height) // 2,
+                colors.BLACK,
+                (0, i * self.cell_height),
+                (self.rect.width, i * self.cell_height),
             )
+
+        for j in range(0, self._map.width):
+            pygame.draw.line(
+                self.surface,
+                colors.BLACK,
+                (j * self.cell_width, 0),
+                (j * self.cell_width, self.rect.height),
+            )
+
+        for i in range(0, self._map.height, 2):
+            pygame.draw.line(
+                self.surface,
+                colors.BLACK,
+                (0, i * self.cell_height),
+                (self.rect.width, i * self.cell_height),
+                8
+            )
+
+        for j in range(0, self._map.width, 2):
+            pygame.draw.line(
+                self.surface,
+                colors.BLACK,
+                (j * self.cell_width, 0),
+                (j * self.cell_width, self.rect.height),
+                8
+            )
+
+        for r, c in self.adj_list:
+            for nr, nc in self.adj_list[(r, c)]:
+                pygame.draw.line(
+                    self.surface,
+                    colors.DARK_BLUE,
+                    (
+                        (c * 2 + 1) * self.cell_width + 4 * (c - nc),
+                        (r * 2 + 1) * self.cell_height + 4 * (r - nr),
+                    ),
+                    (
+                        (nc * 2 + 1) * self.cell_width + 4 * (nc - c),
+                        (nr * 2 + 1) * self.cell_height + 4 * (nr - r),
+                    ),
+                    10
+                )

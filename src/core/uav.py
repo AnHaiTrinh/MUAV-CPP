@@ -30,10 +30,10 @@ class UAV:
         if self.trajectory is None:
             raise ValueError("UAV trajectory is not initialized")
 
-        self.pos_idx = (self.pos_idx + 1) % len(self.trajectory)
-        next_cell = self.trajectory[self.pos_idx]
-        self.r = next_cell.r
-        self.c = next_cell.c
+        # self.pos_idx = (self.pos_idx + 1) % len(self.trajectory)
+        # next_cell = self.trajectory[self.pos_idx]
+        # self.r = next_cell.r
+        # self.c = next_cell.c
 
     @property
     def trajectory_length(self) -> float:

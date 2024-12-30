@@ -56,3 +56,6 @@ if __name__ == "__main__":
                     "|".join([f"{uav.trajectory_length:.4f}" for uav in _uavs]),
                     "|".join([str(count) for count in assign_count]),
                 )
+
+                if not success:
+                    break
